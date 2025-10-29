@@ -1,0 +1,1 @@
+Hecho con React, para frontend y Supabase para backend
