@@ -633,8 +633,8 @@ export default function GroupDetail() {
   if (!group) {
     return (
       <Layout>
-        <div className="text-center py-12">
-          <p className="text-gray-600">Grupo no encontrado</p>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-400 text-lg">Grupo no encontrado</p>
         </div>
       </Layout>
     )
@@ -642,20 +642,20 @@ export default function GroupDetail() {
 
   return (
     <Layout>
-      <div className="space-y-6">
+      <div className="space-y-6 px-2 py-4">
         {/* Header del grupo */}
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <div className="flex items-start justify-between">
+        <div className="bg-gradient-to-br from-white to-blue-50 shadow-xl rounded-2xl p-6 border border-blue-100">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl font-bold">{group.name}</h1>
+              <h1 className="text-3xl font-extrabold text-blue-700">{group.name}</h1>
               {group.description && (
-                <p className="text-gray-600 mt-2">{group.description}</p>
+                <p className="text-gray-600 mt-2 text-lg">{group.description}</p>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={leaveGroup}
-                className="px-3 py-1.5 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                className="px-4 py-2 text-sm font-semibold bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
                 title="Salir del grupo"
               >
                 Salir del grupo
@@ -663,7 +663,7 @@ export default function GroupDetail() {
               {group.created_by === currentUser?.id && (
                 <button
                   onClick={deleteGroup}
-                  className="px-3 py-1.5 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                  className="px-4 py-2 text-sm font-semibold bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   title="Eliminar grupo"
                 >
                   Eliminar grupo
@@ -674,34 +674,34 @@ export default function GroupDetail() {
         </div>
 
         {/* Miembros */}
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <h2 className="text-lg font-medium mb-4">Miembros ({members.length})</h2>
-          <div className="space-y-2">
+        <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
+          <h2 className="text-2xl font-bold text-blue-700 mb-4">Miembros ({members.length})</h2>
+          <div className="space-y-3">
             {members.map(member => (
-              <div key={member.user_id} className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                  <span className="text-sm font-medium">U</span>
+              <div key={member.user_id} className="flex items-center bg-blue-50 p-3 rounded-lg">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold">
+                  <span className="text-sm">{(member.profiles?.full_name || 'U')[0].toUpperCase()}</span>
                 </div>
-                <span className="ml-3">
+                <span className="ml-3 font-semibold text-gray-700">
                   {member.profiles?.full_name || (currentUser && member.user_id === currentUser.id ? currentUser.email : shortId(member.user_id))}
                 </span>
               </div>
             ))}
           </div>
           {/* Invitar por email */}
-          <form onSubmit={inviteMember} className="mt-4 flex gap-2">
+          <form onSubmit={inviteMember} className="mt-6 flex flex-col sm:flex-row gap-2">
             <input
               type="email"
               placeholder="Email del miembro"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              className="flex-1 p-2 border rounded"
+              className="flex-1 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
               required
             />
             <button
               type="submit"
               disabled={inviting}
-              className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-blue-600 disabled:opacity-50 transition-all"
             >
               {inviting ? 'Agregando...' : 'Agregar'}
             </button>
@@ -709,23 +709,23 @@ export default function GroupDetail() {
         </div>
 
         {/* Balances */}
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <h2 className="text-lg font-medium mb-4">Balances</h2>
+        <div className="bg-gradient-to-br from-white to-indigo-50 shadow-xl rounded-2xl p-6 border border-blue-100">
+          <h2 className="text-2xl font-bold text-blue-700 mb-4">Balances</h2>
           {balances.length > 0 ? (
             <div className="space-y-3">
               {balances.map(b => {
                 if (Math.abs(b.balance) < 0.01) {
                   return (
                     <div key={b.user_id} className="flex items-center justify-between text-gray-500">
-                      <span>{b.name}</span>
-                      <span className="text-sm">está saldado</span>
+                      <span className="font-semibold text-gray-700">{b.name}</span>
+                      <span className="text-sm text-gray-400 bg-gray-100 px-3 py-1 rounded-full">Saldado ✓</span>
                     </div>
                   )
                 } else if (b.balance > 0) {
                   return (
-                    <div key={b.user_id} className="flex items-center justify-between">
-                      <span>{b.name}</span>
-                      <span className="text-green-600 font-medium">
+                    <div key={b.user_id} className="flex items-center justify-between bg-green-50 p-3 rounded-lg">
+                      <span className="font-semibold text-gray-700">{b.name}</span>
+                      <span className="text-green-700 font-bold text-lg">
                         le deben ${b.balance.toFixed(2)}
                       </span>
                     </div>
@@ -734,10 +734,10 @@ export default function GroupDetail() {
                   // Si es el usuario actual y debe, ofrecer botón rápido para prellenar liquidación
                   const isCurrent = currentUser && b.user_id === currentUser.id
                   return (
-                    <div key={b.user_id} className="flex items-center justify-between gap-3">
-                      <span>{b.name}</span>
+                    <div key={b.user_id} className="flex items-center justify-between gap-3 bg-red-50 p-3 rounded-lg">
+                      <span className="font-semibold text-gray-700">{b.name}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-red-600 font-medium">
+                        <span className="text-red-700 font-bold text-lg">
                           debe ${Math.abs(b.balance).toFixed(2)}
                         </span>
                         {isCurrent && (
@@ -756,7 +756,7 @@ export default function GroupDetail() {
                               setSettleAmount(amount.toFixed(2))
                               window.scrollTo({ top: 0, behavior: 'smooth' })
                             }}
-                            className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                            className="text-xs px-3 py-1 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors"
                           >
                             Pagar
                           </button>
@@ -768,16 +768,16 @@ export default function GroupDetail() {
               })}
             </div>
           ) : (
-            <p className="text-gray-500 text-center">No hay balances todavía</p>
+            <p className="text-gray-400 text-center py-4">No hay balances todavía</p>
           )}
 
           {/* Liquidar deuda */}
-          <div className="mt-6 border-t pt-4">
-            <h3 className="text-md font-medium mb-3">Liquidar deuda</h3>
-            <form onSubmit={submitSettlement} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+          <div className="mt-6 border-t border-blue-200 pt-6">
+            <h3 className="text-xl font-bold text-blue-700 mb-4">Liquidar deuda</h3>
+            <form onSubmit={submitSettlement} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Quién paga</label>
-                <select value={settleFrom} onChange={(e) => setSettleFrom(e.target.value)} className="w-full p-2 border rounded">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Quién paga</label>
+                <select value={settleFrom} onChange={(e) => setSettleFrom(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
                   <option value="">Seleccionar</option>
                   {members.map(m => (
                     <option key={m.user_id} value={m.user_id}>{displayNameFor(m.user_id)}</option>
@@ -785,8 +785,8 @@ export default function GroupDetail() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-gray-700 mb-1">A quién</label>
-                <select value={settleTo} onChange={(e) => setSettleTo(e.target.value)} className="w-full p-2 border rounded">
+                <label className="block text-sm font-semibold text-gray-700 mb-1">A quién</label>
+                <select value={settleTo} onChange={(e) => setSettleTo(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300">
                   <option value="">Seleccionar</option>
                   {members.map(m => (
                     <option key={m.user_id} value={m.user_id}>{displayNameFor(m.user_id)}</option>
@@ -794,14 +794,14 @@ export default function GroupDetail() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm text-gray-700 mb-1">Monto</label>
-                <input type="number" step="0.01" value={settleAmount} onChange={e => setSettleAmount(e.target.value)} className="w-full p-2 border rounded" placeholder="0.00"/>
+                <label className="block text-sm font-semibold text-gray-700 mb-1">Monto</label>
+                <input type="number" step="0.01" value={settleAmount} onChange={e => setSettleAmount(e.target.value)} className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" placeholder="0.00"/>
               </div>
               <div>
                 <button
                   type="submit"
                   disabled={settling || !settleFrom || !settleTo || settleFrom === settleTo || (parseFloat(settleAmount) || 0) <= 0}
-                  className="w-full py-2 px-4 bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50"
+                  className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-blue-600 disabled:opacity-50 transition-all"
                 >
                   {settling ? 'Registrando...' : 'Liquidar'}
                 </button>
@@ -838,24 +838,24 @@ export default function GroupDetail() {
         </div>
 
         {/* Botón para añadir gasto */}
-        <div className="bg-white shadow sm:rounded-lg p-6">
+        <div className="bg-gradient-to-br from-white to-green-50 shadow-xl rounded-2xl p-6 border border-green-100">
           {!showExpenseForm ? (
             <button
               onClick={() => setShowExpenseForm(true)}
-              className="w-full py-2 px-4 bg-green-600 text-white rounded hover:bg-green-700"
+              className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg shadow-md hover:from-green-700 hover:to-teal-600 transition-all"
             >
               + Añadir Gasto
             </button>
           ) : (
             <form onSubmit={createExpense} className="space-y-4">
-              <h2 className="text-lg font-medium">Nuevo Gasto</h2>
+              <h2 className="text-2xl font-bold text-green-700">Nuevo Gasto</h2>
               
               <input
                 type="text"
                 placeholder="Descripción del gasto"
                 value={newExpenseDesc}
                 onChange={e => setNewExpenseDesc(e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300"
                 required
               />
               
@@ -865,7 +865,7 @@ export default function GroupDetail() {
                 placeholder="Monto"
                 value={newExpenseAmount}
                 onChange={e => setNewExpenseAmount(e.target.value)}
-                className="w-full p-2 border rounded"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-300"
                 required
               />
 
@@ -958,7 +958,7 @@ export default function GroupDetail() {
               <div className="flex gap-2">
                 <button
                   type="submit"
-                  className="flex-1 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  className="flex-1 py-3 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg hover:from-green-700 hover:to-teal-600 transition-all"
                 >
                   Crear Gasto
                 </button>
@@ -971,7 +971,7 @@ export default function GroupDetail() {
                     setPaidBy('')
                     setSplitType('equal')
                   }}
-                  className="flex-1 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                  className="flex-1 py-3 bg-gray-200 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   Cancelar
                 </button>
@@ -981,40 +981,40 @@ export default function GroupDetail() {
         </div>
 
         {/* Lista de gastos */}
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <h2 className="text-lg font-medium mb-4">Gastos</h2>
+        <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
+          <h2 className="text-2xl font-bold text-blue-700 mb-6">Gastos</h2>
           {expenses.length > 0 ? (
             <div className="space-y-4">
               {expenses.map(expense => (
-                <div key={expense.id} className="border-b pb-4 last:border-b-0">
-                  <div className="flex justify-between items-start">
+                <div key={expense.id} className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
                     <div className="flex-1">
-                      <p className="font-medium">{expense.description}</p>
-                      <p className="text-sm text-gray-500">
-                        Pagado por {expense.profiles?.full_name || (currentUser && expense.paid_by === currentUser.id ? currentUser.email : shortId(expense.paid_by))}
+                      <p className="font-bold text-lg text-gray-800">{expense.description}</p>
+                      <p className="text-sm text-gray-600 mt-1">
+                        Pagado por <span className="font-semibold">{expense.profiles?.full_name || (currentUser && expense.paid_by === currentUser.id ? currentUser.email : shortId(expense.paid_by))}</span>
                       </p>
                       <p className="text-xs text-gray-400 mt-1">
                         {new Date(expense.created_at).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <p className="text-lg font-semibold">${expense.amount.toFixed(2)}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-xl font-extrabold text-blue-700">${expense.amount.toFixed(2)}</p>
                       <button
                         onClick={() => startEdit(expense)}
-                        className="text-sm text-gray-700 hover:text-gray-900"
+                        className="text-sm px-3 py-1 bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors"
                         title="Editar gasto"
                       >
                         ✏️
                       </button>
                       <button
                         onClick={() => toggleExpand(expense.id)}
-                        className="text-sm text-indigo-600 hover:text-indigo-800"
+                        className="text-sm px-3 py-1 bg-indigo-200 text-indigo-800 hover:bg-indigo-300 rounded-lg transition-colors font-semibold"
                       >
                         {expanded.has(expense.id) ? 'Ocultar' : 'Ver detalles'}
                       </button>
                       <button
                         onClick={() => deleteExpense(expense.id)}
-                        className="text-red-600 hover:text-red-800 text-sm"
+                        className="text-sm px-3 py-1 bg-red-200 hover:bg-red-300 rounded-lg transition-colors"
                         title="Eliminar gasto"
                       >
                         🗑️

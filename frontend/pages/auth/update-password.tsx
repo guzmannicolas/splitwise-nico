@@ -41,31 +41,30 @@ export default function UpdatePassword() {
   }, [router])
 
   return (
-    <Layout>
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8">
+    <Layout hideAuthLinks>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-200 py-12 px-2">
+        <div className="max-w-md w-full bg-white/90 rounded-2xl shadow-2xl border border-blue-100 backdrop-blur-md p-8">
           <div>
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            <h2 className="text-3xl font-extrabold text-blue-700 text-center mb-2">
               Actualizar contraseña
             </h2>
+            <p className="text-center text-gray-500 mb-6">Ingresa tu nueva contraseña</p>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleUpdatePassword}>
-            <div className="rounded-md shadow-sm -space-y-px">
-              <div>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Nueva contraseña"
-                  minLength={6}
-                />
-              </div>
+          <form className="space-y-6" onSubmit={handleUpdatePassword}>
+            <div>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+                placeholder="Nueva contraseña"
+                minLength={6}
+              />
             </div>
 
             {message && (
-              <div className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+              <div className={`text-sm p-3 rounded-lg ${message.includes('Error') ? 'text-red-600 bg-red-50' : 'text-green-600 bg-green-50'}`}>
                 {message}
               </div>
             )}
@@ -74,7 +73,7 @@ export default function UpdatePassword() {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50"
               >
                 {loading ? 'Actualizando...' : 'Actualizar contraseña'}
               </button>

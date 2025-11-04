@@ -58,9 +58,17 @@ export default function Profile() {
       if (error) throw error
 
       alert('Perfil actualizado correctamente')
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving profile:', error)
-      alert('Error al guardar: ' + (error instanceof Error ? error.message : String(error)))
+      let msg = 'Error desconocido';
+      if (error && typeof error === 'object') {
+        if (error.message) msg = error.message;
+        else if (error.details) msg = error.details;
+        else msg = JSON.stringify(error);
+      } else {
+        msg = String(error);
+      }
+      alert('Error al guardar: ' + msg)
     } finally {
       setSaving(false)
     }
@@ -69,8 +77,8 @@ export default function Profile() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
         </div>
       </Layout>
     )
@@ -78,47 +86,41 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="max-w-2xl mx-auto">
-        <div className="bg-white shadow sm:rounded-lg p-6">
-          <h1 className="text-2xl font-bold mb-6">Mi Perfil</h1>
-          
-          <form onSubmit={saveProfile} className="space-y-4">
+      <div className="flex items-center justify-center min-h-[80vh] bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-2">
+        <div className="w-full max-w-lg bg-white/90 shadow-xl rounded-2xl p-8 border border-blue-100 backdrop-blur-md">
+          <h1 className="text-3xl font-extrabold text-blue-700 mb-2 text-center tracking-tight">Mi Perfil</h1>
+          <p className="text-center text-gray-500 mb-8">Gestiona tu información personal</p>
+          <form onSubmit={saveProfile} className="space-y-7">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 disabled
-                className="w-full p-2 border rounded bg-gray-100 text-gray-600"
+                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-              <p className="text-xs text-gray-500 mt-1">El email no se puede cambiar</p>
+              <p className="text-xs text-gray-400 mt-1">El email no se puede cambiar</p>
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre para mostrar
-              </label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre para mostrar</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Ej: Bruno Guzmán"
-                className="w-full p-2 border rounded"
+                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
                 required
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Este nombre se mostrará en los grupos y gastos
-              </p>
+              <p className="text-xs text-gray-400 mt-1">Este nombre se mostrará en los grupos y gastos</p>
             </div>
-
             <button
               type="submit"
               disabled={saving}
-              className="w-full py-2 px-4 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200 disabled:opacity-60"
             >
-              {saving ? 'Guardando...' : 'Guardar Cambios'}
+              {saving ? (
+                <span className="flex items-center justify-center"><svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Guardando...</span>
+              ) : 'Guardar Cambios'}
             </button>
           </form>
         </div>
