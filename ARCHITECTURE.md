@@ -95,8 +95,14 @@ splitwise-nico/
 
 #### `group_members`
 - Relaciona usuarios con grupos (Many-to-Many)
-- Campos: `group_id`, `user_id`, `role` ('admin' o 'member')
-- Trigger `auto_add_creator_to_group` agrega al creador como admin
+- Campos: `group_id`, `user_id`, `joined_at`
+- Trigger `auto_add_creator_to_group` agrega al creador automáticamente
+
+#### `group_invitations`
+- Almacena invitaciones pendientes/aceptadas/rechazadas
+- Campos: `id`, `group_id`, `invited_email`, `invited_by`, `status`, `token`, `expires_at`
+- Token único para generar link de aceptación
+- Expira en 7 días por defecto
 
 #### `expenses`
 - Representa gastos compartidos
@@ -295,7 +301,7 @@ Todas las tablas tienen RLS habilitado. Políticas clave:
 ## 📈 Próximas Mejoras Sugeridas
 
 1. **Autenticación Social**: Google OAuth, GitHub (ya explicado en guía anterior)
-2. **Notificaciones**: emails cuando te agregan a un grupo o registran un gasto
+2. **Notificaciones por Email**: Configurar Supabase Email Templates para enviar invitaciones automáticamente
 3. **Historial de cambios**: auditoría de quién editó/borró gastos
 4. **Monedas múltiples**: soporte para USD, EUR, ARS con conversión
 5. **Reportes**: gráficos de gastos por categoría/tiempo

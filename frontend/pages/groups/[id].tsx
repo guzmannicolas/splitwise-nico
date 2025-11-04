@@ -15,6 +15,7 @@ interface Member {
   user_id: string
   profiles?: {
     full_name: string
+    email?: string
   }
 }
 
@@ -181,7 +182,8 @@ export default function GroupDetail() {
         .select(`
           user_id,
           profiles:user_id (
-            full_name
+            full_name,
+            email
           )
         `)
         .eq('group_id', id)
@@ -275,21 +277,59 @@ export default function GroupDetail() {
 
   async function inviteMember(e: React.FormEvent) {
     e.preventDefault()
-    if (!inviteEmail) return
+    if (!inviteEmail || !currentUser) return
+    
     try {
       setInviting(true)
-      const { error, data } = await supabase.rpc('invite_member', {
-        p_group_id: id,
-        p_email: inviteEmail
-      })
+      
+      // Verificar si el usuario ya es miembro
+      const isAlreadyMember = members.some(m => 
+        m.profiles?.email === inviteEmail || m.user_id === inviteEmail
+      )
+      
+      if (isAlreadyMember) {
+        alert('Este usuario ya es miembro del grupo')
+        setInviteEmail('')
+        setInviting(false)
+        return
+      }
+      
+      // Crear invitación
+      const { data, error } = await supabase
+        .from('group_invitations')
+        .insert({
+          group_id: id,
+          invited_email: inviteEmail,
+          invited_by: currentUser.id,
+          status: 'pending'
+        })
+        .select()
+      
       if (error) throw error
+      
+      // TODO: Aquí Supabase debería enviar un email automático
+      // Por ahora mostramos el link manualmente
+      if (data && data[0]) {
+        const token = data[0].token
+        const inviteLink = `${window.location.origin}/accept-invite?token=${token}`
+        
+        alert(`Invitación creada. Comparte este link con el usuario:\n\n${inviteLink}\n\n(Cópialo y envíalo por WhatsApp, email, etc.)`)
+        
+        // Copiar al portapapeles automáticamente
+        try {
+          await navigator.clipboard.writeText(inviteLink)
+          console.log('Link copiado al portapapeles')
+        } catch (clipErr) {
+          console.warn('No se pudo copiar al portapapeles', clipErr)
+        }
+      }
+      
       setInviteEmail('')
       await fetchGroupData()
-      alert('Miembro invitado/agregado correctamente')
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      alert('No se pudo agregar al miembro: ' + msg)
-      console.error('invite_member error', err)
+      alert('No se pudo crear la invitación: ' + msg)
+      console.error('invite error', err)
     } finally {
       setInviting(false)
     }
@@ -703,7 +743,7 @@ export default function GroupDetail() {
               disabled={inviting}
               className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-500 text-white font-bold rounded-lg hover:from-indigo-700 hover:to-blue-600 disabled:opacity-50 transition-all"
             >
-              {inviting ? 'Agregando...' : 'Agregar'}
+              {inviting ? 'Invitando...' : 'Invitar'}
             </button>
           </form>
         </div>
