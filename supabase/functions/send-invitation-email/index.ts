@@ -94,7 +94,7 @@ serve(async (req) => {
                 </div>
                 <div class="footer">
                   <p>Si no esperabas este email, puedes ignorarlo.</p>
-                  <p>© 2025 Dividi2 - Splitwise Clone</p>
+                  <p>© 2025 Dividi2</p>
                 </div>
               </div>
             </body>

@@ -1,4 +1,4 @@
-# Guía de Arquitectura - Splitwise Clone
+# Guía de Arquitectura - Dividi2
 
 ## 📋 Descripción General
 
@@ -323,4 +323,4 @@ Todas las tablas tienen RLS habilitado. Políticas clave:
 ---
 
 **Última actualización**: Noviembre 2025  
-**Autor**: Proyecto Splitwise Clone
+**Autor**: Proyecto Dividi2

@@ -159,7 +159,7 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
             {/* Branding/Logo; permanece a la izquierda. */}
             <div className="flex items-center">
               <Link href={user ? "/dashboard" : "/"} className="flex items-center px-2 text-blue-700 font-bold text-xl">
-                💸 Splitwise Clone!
+                💸 Dividi2
               </Link>
             </div>
             {/* Bloque derecho del navbar: links principales y menú de usuario.
