@@ -307,29 +307,65 @@ export default function GroupDetail() {
       
       if (error) throw error
       
-      // TODO: Aquí Supabase debería enviar un email automático
-      // Por ahora mostramos el link manualmente
+      // Enviar email de invitación
       if (data && data[0]) {
         const token = data[0].token
         const inviteLink = `${window.location.origin}/accept-invite?token=${token}`
         
-        alert(`Invitación creada. Comparte este link con el usuario:\n\n${inviteLink}\n\n(Cópialo y envíalo por WhatsApp, email, etc.)`)
+        // Obtener nombre del grupo y del invitador
+        const invitedByName = members.find(m => m.user_id === currentUser.id)?.profiles?.full_name || currentUser.email || 'Alguien'
+        const groupName = group?.name || 'un grupo'
         
-        // Copiar al portapapeles automáticamente
         try {
+          // Llamar a Edge Function para enviar email
+          const { data: emailData, error: emailError } = await supabase.functions.invoke('send-invitation-email', {
+            body: {
+              invitedEmail: inviteEmail,
+              invitedByName: invitedByName,
+              groupName: groupName,
+              token: token,
+              siteUrl: window.location.origin
+            }
+          })
+          
+          if (emailError) {
+            console.error('Error al enviar email:', emailError)
+            // Si falla el email, mostrar link manual como fallback
+            alert(`Invitación creada, pero no se pudo enviar el email.\n\nComparte este link manualmente:\n\n${inviteLink}`)
+            await navigator.clipboard.writeText(inviteLink)
+          } else {
+            // Email enviado exitosamente
+            alert(`✅ Invitación enviada a ${inviteEmail}!\n\nTambién puedes compartir este link:\n${inviteLink}`)
+            await navigator.clipboard.writeText(inviteLink)
+          }
+        } catch (emailErr) {
+          console.error('Error al invocar función de email:', emailErr)
+          // Fallback: mostrar link manual
+          alert(`Invitación creada. Comparte este link:\n\n${inviteLink}`)
           await navigator.clipboard.writeText(inviteLink)
-          console.log('Link copiado al portapapeles')
-        } catch (clipErr) {
-          console.warn('No se pudo copiar al portapapeles', clipErr)
         }
       }
       
       setInviteEmail('')
       await fetchGroupData()
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      alert('No se pudo crear la invitación: ' + msg)
-      console.error('invite error', err)
+    } catch (err: any) {
+      console.error('Error completo al invitar:', err)
+      
+      // Extraer mensaje de error de Supabase
+      let errorMsg = 'Error desconocido'
+      if (err?.message) {
+        errorMsg = err.message
+      } else if (err?.error_description) {
+        errorMsg = err.error_description
+      } else if (err?.details) {
+        errorMsg = err.details
+      } else if (typeof err === 'string') {
+        errorMsg = err
+      } else {
+        errorMsg = JSON.stringify(err)
+      }
+      
+      alert('No se pudo crear la invitación: ' + errorMsg)
     } finally {
       setInviting(false)
     }
