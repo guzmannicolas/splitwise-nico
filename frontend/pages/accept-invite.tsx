@@ -13,6 +13,8 @@ export default function AcceptInvite() {
   const [needsAuth, setNeedsAuth] = useState(false)
 
   useEffect(() => {
+    // Esperar a que el router esté listo
+    if (!router.isReady) return
     if (!token) return
 
     async function processInvitation() {
@@ -64,7 +66,7 @@ export default function AcceptInvite() {
     }
 
     processInvitation()
-  }, [token, router])
+  }, [token, router.isReady])
 
   // Manejar aceptación después del login
   useEffect(() => {
