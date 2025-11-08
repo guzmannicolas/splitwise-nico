@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient'
 import type { Expense, ExpenseSplit, CreateExpenseData, UpdateExpenseData } from './types'
+import { getSplitStrategy } from './splits'
 
 /**
  * Servicio para manejar operaciones relacionadas con gastos
@@ -65,13 +66,13 @@ export class ExpenseService {
         return { success: false, error: expenseError?.message || 'Error al crear el gasto' }
       }
 
-      // 3. Calcular y crear splits
-      const splits = this.calculateSplits(
+      // 3. Calcular splits usando Strategy
+      const strategy = getSplitStrategy(expenseData.splitType)
+      const splits = strategy.build(
         expense.id,
         expenseData.amount,
         expenseData.paid_by,
         expenseData.memberIds,
-        expenseData.splitType,
         expenseData.customSplits
       )
 
@@ -128,13 +129,13 @@ export class ExpenseService {
         .delete()
         .eq('expense_id', expenseId)
 
-      // 4. Crear nuevos splits
-      const splits = this.calculateSplits(
+      // 4. Crear nuevos splits usando Strategy
+      const strategy = getSplitStrategy(updateData.splitType)
+      const splits = strategy.build(
         expenseId,
         updateData.amount,
         updateData.paid_by,
         updateData.memberIds,
-        updateData.splitType,
         updateData.customSplits
       )
 
@@ -169,49 +170,7 @@ export class ExpenseService {
     return { success: true }
   }
 
-  /**
-   * Calcula los splits según el tipo de división
-   */
-  private static calculateSplits(
-    expenseId: string,
-    amount: number,
-    paidBy: string,
-    memberIds: string[],
-    splitType: 'equal' | 'full' | 'custom',
-    customSplits?: Record<string, number>
-  ): Array<{ expense_id: string; user_id: string; amount: number }> {
-    const splits: Array<{ expense_id: string; user_id: string; amount: number }> = []
-
-    if (splitType === 'equal') {
-      // División igualitaria
-      const perPerson = amount / memberIds.length
-      memberIds.forEach(userId => {
-        if (userId !== paidBy) {
-          splits.push({
-            expense_id: expenseId,
-            user_id: userId,
-            amount: parseFloat(perPerson.toFixed(2))
-          })
-        }
-      })
-    } else if (splitType === 'full') {
-      // Todo el monto al pagador (nadie más debe)
-      // No se crean splits
-    } else if (splitType === 'custom' && customSplits) {
-      // Montos personalizados
-      Object.entries(customSplits).forEach(([userId, amt]) => {
-        if (userId !== paidBy && amt > 0) {
-          splits.push({
-            expense_id: expenseId,
-            user_id: userId,
-            amount: parseFloat(amt.toFixed(2))
-          })
-        }
-      })
-    }
-
-    return splits
-  }
+  // Strategy pattern elimina necesidad de calculateSplits interno
 
   /**
    * Valida los datos de un gasto

@@ -5,6 +5,7 @@ import Layout from '../../components/Layout'
 import { useGroup } from '../../lib/hooks/useGroup'
 import { useExpenseOperations } from '../../lib/hooks/useExpenseOperations'
 import { GroupService } from '../../lib/services/GroupService'
+import { InvitationService } from '../../lib/services/InvitationService'
 import BalanceCard from '../../components/groups/BalanceCard'
 import ExpenseForm from '../../components/groups/ExpenseForm'
 import ExpenseList from '../../components/groups/ExpenseList'
@@ -59,57 +60,34 @@ export default function GroupDetail() {
   // Invitar miembro
   const handleInvite = async (email: string) => {
     if (!currentUser || !groupId) return
-
     setInviting(true)
     try {
       // Verificar si ya es miembro
       const isAlreadyMember = members.some(
         m => m.profiles?.email === email || m.user_id === email
       )
-
       if (isAlreadyMember) {
         alert('Este usuario ya es miembro del grupo')
         return
       }
 
-      // 1) Crear invitación en BD
-      const { data: invitation, error } = await GroupService.inviteMember(groupId, email, currentUser.id)
-
-      if (error) {
-        alert('Error al invitar: ' + error.message)
-        return
-      }
-
-      // 2) Enviar email vía Edge Function
-      const token: string | undefined = invitation?.token
       const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || (typeof window !== 'undefined' ? window.location.origin : '')
       const invitedByName = members.find(m => m.user_id === currentUser.id)?.profiles?.full_name || currentUser.email || 'Alguien'
       const groupName = group?.name || 'un grupo'
 
-      if (!token) {
-        console.warn('Invitación creada pero sin token. invitation =', invitation)
-      } else {
-        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-invitation-email', {
-          body: {
-            invitedEmail: email,
-            invitedByName,
-            groupName,
-            token,
-            siteUrl,
-          },
-        })
+      const invitationService = new InvitationService()
+      const result = await invitationService.invite(groupId, email, currentUser.id, siteUrl, invitedByName, groupName)
 
-        if (emailError) {
-          console.error('Error al enviar email:', emailError, 'Respuesta:', emailData)
-          const manualLink = `${siteUrl}/accept-invite?token=${token}`
-          alert(`Invitación creada, pero no se pudo enviar el email. Comparte este link: \n${manualLink}`)
-        } else {
-          alert('Invitación enviada correctamente por email')
-        }
+      if (!result.ok) {
+        alert(result.message)
+      } else if (result.emailSent) {
+        alert(result.message)
+      } else if (result.manualLink) {
+        alert(`${result.message}. Comparte este link:\n${result.manualLink}`)
       }
-    } catch (error) {
-      alert('Error al enviar invitación')
-      console.error(error)
+    } catch (err) {
+      console.error(err)
+      alert('Error inesperado en la invitación')
     } finally {
       setInviting(false)
     }
