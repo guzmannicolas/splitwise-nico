@@ -72,12 +72,40 @@ export default function GroupDetail() {
         return
       }
 
-      const { error } = await GroupService.inviteMember(groupId, email, currentUser.id)
+      // 1) Crear invitación en BD
+      const { data: invitation, error } = await GroupService.inviteMember(groupId, email, currentUser.id)
 
       if (error) {
         alert('Error al invitar: ' + error.message)
+        return
+      }
+
+      // 2) Enviar email vía Edge Function
+      const token: string | undefined = invitation?.token
+      const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || (typeof window !== 'undefined' ? window.location.origin : '')
+      const invitedByName = members.find(m => m.user_id === currentUser.id)?.profiles?.full_name || currentUser.email || 'Alguien'
+      const groupName = group?.name || 'un grupo'
+
+      if (!token) {
+        console.warn('Invitación creada pero sin token. invitation =', invitation)
       } else {
-        alert('Invitación enviada correctamente')
+        const { data: emailData, error: emailError } = await supabase.functions.invoke('send-invitation-email', {
+          body: {
+            invitedEmail: email,
+            invitedByName,
+            groupName,
+            token,
+            siteUrl,
+          },
+        })
+
+        if (emailError) {
+          console.error('Error al enviar email:', emailError, 'Respuesta:', emailData)
+          const manualLink = `${siteUrl}/accept-invite?token=${token}`
+          alert(`Invitación creada, pero no se pudo enviar el email. Comparte este link: \n${manualLink}`)
+        } else {
+          alert('Invitación enviada correctamente por email')
+        }
       }
     } catch (error) {
       alert('Error al enviar invitación')
