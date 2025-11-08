@@ -253,7 +253,36 @@ export default function Dashboard() {
             <p className="text-gray-400 text-center py-4">No hay gastos recientes</p>
           )}
         </div>
-        {/* Crear nuevo grupo */}
+
+        {/* Lista de grupos */}
+        <div className="bg-white shadow-xl rounded-2xl border border-blue-100">
+          <div className="px-6 py-6">
+            <h2 className="text-2xl font-bold text-blue-700 mb-6">Tus grupos</h2>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
+              </div>
+            ) : groups.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {groups.map(group => (
+                  <div
+                    key={group.id}
+                    className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-5 hover:shadow-lg hover:scale-99 cursor-pointer transition-all duration-200"
+                    onClick={() => window.location.href = `/groups/${group.id}`}
+                  >
+                    <h3 className="font-bold text-lg text-blue-800">{group.name}</h3>
+                    {group.description && (
+                      <p className="text-gray-600 text-sm mt-2">{group.description}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8">No hay grupos todavía</p>
+            )}
+          </div>
+        </div>
+                {/* Crear nuevo grupo */}
         <div className="bg-gradient-to-br from-white to-indigo-50 shadow-xl rounded-2xl p-6 border border-blue-100">
           <h2 className="text-2xl font-bold text-blue-700 mb-4">Crear nuevo grupo</h2>
           <form onSubmit={createGroup} className="space-y-4">
@@ -283,35 +312,6 @@ export default function Dashboard() {
               Crear Grupo
             </button>
           </form>
-        </div>
-
-        {/* Lista de grupos */}
-        <div className="bg-white shadow-xl rounded-2xl border border-blue-100">
-          <div className="px-6 py-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Tus grupos</h2>
-            {loading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
-              </div>
-            ) : groups.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groups.map(group => (
-                  <div
-                    key={group.id}
-                    className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-5 hover:shadow-lg hover:scale-99 cursor-pointer transition-all duration-200"
-                    onClick={() => window.location.href = `/groups/${group.id}`}
-                  >
-                    <h3 className="font-bold text-lg text-blue-800">{group.name}</h3>
-                    {group.description && (
-                      <p className="text-gray-600 text-sm mt-2">{group.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-8">No hay grupos todavía</p>
-            )}
-          </div>
         </div>
       </div>
     </Layout>
