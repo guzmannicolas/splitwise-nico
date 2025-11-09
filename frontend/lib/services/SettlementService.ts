@@ -16,6 +16,7 @@ export class SettlementService {
         .from('settlements')
         .select('*')
         .eq('group_id', groupId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
 
       return { data: data as any, error }
@@ -66,9 +67,10 @@ export class SettlementService {
    * Elimina una liquidación
    */
   static async deleteSettlement(settlementId: string): Promise<{ success: boolean; error?: string }> {
+    // Soft delete: set deleted_at, row remains for auditing
     const { error } = await supabase
       .from('settlements')
-      .delete()
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', settlementId)
 
     if (error) {

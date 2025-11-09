@@ -55,16 +55,33 @@ export class BalanceDetailService {
       debtMatrix.set(key, current - settlement.amount)
     })
 
-    // 3. Convertir a array y filtrar montos insignificantes
-    const details: DebtDetail[] = []
+    // 3. Netear deudas bilaterales: si A->B y B->A existen, mostrar sólo el neto
+    // pairNet almacena el neto en el orden [minId|maxId]
+    const pairNet = new Map<string, { a: string; b: string; net: number }>()
     debtMatrix.forEach((amount, key) => {
-      if (Math.abs(amount) < 0.01) return // tolerancia de 1 centavo
+      if (Math.abs(amount) < 0.01) return
+      const [from, to] = key.split('->')
+      const [minId, maxId] = [from, to].sort()
+      const pKey = `${minId}|${maxId}`
+      const rec = pairNet.get(pKey) || { a: minId, b: maxId, net: 0 }
+      // Si la dirección coincide con min->max sumamos, si es al revés restamos
+      const delta = from === minId ? amount : -amount
+      rec.net += delta
+      pairNet.set(pKey, rec)
+    })
 
-      const [from_user_id, to_user_id] = key.split('->')
+    const details: DebtDetail[] = []
+    pairNet.forEach(({ a, b, net }) => {
+      const rounded = Math.round(net * 100) / 100
+      if (Math.abs(rounded) < 0.01) return
+      // net > 0 significa a->b; net < 0 significa b->a
+      const from_user_id = rounded > 0 ? a : b
+      const to_user_id = rounded > 0 ? b : a
+      const amount = Math.abs(rounded)
       details.push({
         from_user_id,
         to_user_id,
-        amount: Math.round(amount * 100) / 100,
+        amount,
         debtor_name: nameMap.get(from_user_id) || from_user_id.slice(0, 8),
         creditor_name: nameMap.get(to_user_id) || to_user_id.slice(0, 8)
       })

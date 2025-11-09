@@ -23,12 +23,13 @@ export default function SettlementSection({
   displayNameFor
 }: Props) {
   const [showForm, setShowForm] = useState(false)
+  const [fromUserId, setFromUserId] = useState('')
   const [toUserId, setToUserId] = useState('')
   const [amount, setAmount] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!currentUserId || !toUserId || !amount) return
+    if (!fromUserId || !toUserId || !amount) return
 
     const parsedAmount = parseFloat(amount)
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
@@ -36,7 +37,13 @@ export default function SettlementSection({
       return
     }
 
-    onCreateSettlement(currentUserId, toUserId, parsedAmount)
+    if (fromUserId === toUserId) {
+      alert('El pagador y receptor no pueden ser la misma persona')
+      return
+    }
+
+    onCreateSettlement(fromUserId, toUserId, parsedAmount)
+    setFromUserId('')
     setToUserId('')
     setAmount('')
     setShowForm(false)
@@ -44,10 +51,11 @@ export default function SettlementSection({
 
   // Encontrar quién le debe a quién (simplificado)
   const suggestions = balances
-    .filter(b => b.user_id === currentUserId && b.balance < 0)
+    .filter(b => b.balance < 0)
     .map(b => {
-      const owedTo = balances.find(ob => ob.user_id !== currentUserId && ob.balance > 0)
-      return owedTo ? { to: owedTo.user_id, amount: Math.min(Math.abs(b.balance), owedTo.balance) } : null
+      const debtor = b.user_id
+      const owedTo = balances.find(ob => ob.user_id !== debtor && ob.balance > 0)
+      return owedTo ? { from: debtor, to: owedTo.user_id, amount: Math.min(Math.abs(b.balance), owedTo.balance) } : null
     })
     .filter(s => s !== null)
 
@@ -61,7 +69,7 @@ export default function SettlementSection({
           <p className="text-sm font-semibold text-yellow-800 mb-2">💡 Sugerencias para saldar:</p>
           {suggestions.slice(0, 2).map((sug, idx) => (
             <p key={idx} className="text-sm text-yellow-700">
-              Pagale ${sug!.amount.toFixed(2)} a {displayNameFor(sug!.to)}
+              {displayNameFor(sug!.from)} debería pagar ${sug!.amount.toFixed(2)} a {displayNameFor(sug!.to)}
             </p>
           ))}
         </div>
@@ -83,7 +91,23 @@ export default function SettlementSection({
           <h3 className="font-semibold text-purple-800 mb-3">Registrar pago realizado</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Le pagaste a:</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quién pagó:</label>
+              <select
+                value={fromUserId}
+                onChange={e => setFromUserId(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300"
+                required
+              >
+                <option value="">Seleccionar miembro</option>
+                {members.map(m => (
+                  <option key={m.user_id} value={m.user_id}>
+                    {displayNameFor(m.user_id)}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Le pagó a:</label>
               <select
                 value={toUserId}
                 onChange={e => setToUserId(e.target.value)}
@@ -92,7 +116,7 @@ export default function SettlementSection({
               >
                 <option value="">Seleccionar miembro</option>
                 {members
-                  .filter(m => m.user_id !== currentUserId)
+                  .filter(m => m.user_id !== fromUserId)
                   .map(m => (
                     <option key={m.user_id} value={m.user_id}>
                       {displayNameFor(m.user_id)}
@@ -125,6 +149,7 @@ export default function SettlementSection({
                 type="button"
                 onClick={() => {
                   setShowForm(false)
+                  setFromUserId('')
                   setToUserId('')
                   setAmount('')
                 }}
@@ -161,10 +186,15 @@ export default function SettlementSection({
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="font-bold text-purple-600">${s.amount.toFixed(2)}</span>
-                    {currentUserId === s.from_user_id && (
+                    {currentUserId && (
                       <button
-                        onClick={() => onDeleteSettlement(s.id)}
+                        onClick={() => {
+                          if (confirm('¿Eliminar este pago? Se registrará en auditoría.')) {
+                            onDeleteSettlement(s.id)
+                          }
+                        }}
                         className="text-red-500 hover:text-red-700 text-sm font-semibold"
+                        title="Eliminar pago (soft delete)"
                       >
                         ✕
                       </button>

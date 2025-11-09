@@ -43,6 +43,8 @@ export interface Settlement {
   to_user_id: string
   amount: number
   created_at: string
+  created_by?: string
+  deleted_at?: string | null
 }
 
 export interface Balance {
