@@ -6,7 +6,12 @@ import type { CreateExpenseData, UpdateExpenseData, SplitType } from '../service
  * Hook personalizado para manejar operaciones de gastos
  * Responsabilidad: CRUD de gastos y estado del formulario
  */
-export function useExpenseOperations(groupId: string, memberIds: string[], onSuccess: () => void) {
+export function useExpenseOperations(
+  groupId: string, 
+  memberIds: string[], 
+  currentUserId: string,
+  onSuccess: () => void
+) {
   const [creating, setCreating] = useState(false)
   const [updating, setUpdating] = useState(false)
 
@@ -18,7 +23,8 @@ export function useExpenseOperations(groupId: string, memberIds: string[], onSuc
     amount: number,
     paidBy: string,
     splitType: SplitType,
-    customSplits?: Record<string, string>
+    customSplits?: Record<string, string>,
+    fullBeneficiaryId?: string
   ) => {
     setCreating(true)
 
@@ -41,7 +47,9 @@ export function useExpenseOperations(groupId: string, memberIds: string[], onSuc
         group_id: groupId,
         splitType,
         customSplits: customSplitsNumbers,
-        memberIds
+        memberIds,
+        fullBeneficiaryId,
+        created_by: currentUserId
       }
 
       const result = await ExpenseService.createExpense(expenseData)
@@ -68,7 +76,8 @@ export function useExpenseOperations(groupId: string, memberIds: string[], onSuc
     amount: number,
     paidBy: string,
     splitType: SplitType,
-    customSplits?: Record<string, string>
+    customSplits?: Record<string, string>,
+    fullBeneficiaryId?: string
   ) => {
     setUpdating(true)
 
@@ -90,7 +99,9 @@ export function useExpenseOperations(groupId: string, memberIds: string[], onSuc
         paid_by: paidBy,
         splitType,
         customSplits: customSplitsNumbers,
-        memberIds
+        memberIds,
+        fullBeneficiaryId,
+        updated_by: currentUserId
       }
 
       const result = await ExpenseService.updateExpense(expenseId, updateData)

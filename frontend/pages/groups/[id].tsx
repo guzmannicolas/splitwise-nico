@@ -4,12 +4,18 @@ import { supabase } from '../../lib/supabaseClient'
 import Layout from '../../components/Layout'
 import { useGroup } from '../../lib/hooks/useGroup'
 import { useExpenseOperations } from '../../lib/hooks/useExpenseOperations'
+import { useSettlementOperations } from '../../lib/hooks/useSettlementOperations'
 import { GroupService } from '../../lib/services/GroupService'
 import { InvitationService } from '../../lib/services/InvitationService'
 import BalanceCard from '../../components/groups/BalanceCard'
-import ExpenseForm from '../../components/groups/ExpenseForm'
+import ExpenseComposer from '../../components/groups/ExpenseComposer'
 import ExpenseList from '../../components/groups/ExpenseList'
 import MemberList from '../../components/groups/MemberList'
+import SettlementSection from '../../components/groups/SettlementSection'
+import ActivityHistory from '../../components/groups/ActivityHistory'
+import GroupHeader from '../../components/groups/GroupHeader'
+import BalanceDetailsModal from '../../components/groups/BalanceDetailsModal'
+import { useBalanceDetails } from '../../lib/hooks/useBalanceDetails'
 
 /**
  * Página de detalle de grupo - REFACTORIZADA CON SOLID
@@ -22,24 +28,37 @@ export default function GroupDetail() {
   const groupId = typeof id === 'string' ? id : undefined
 
   // Hook personalizado para datos del grupo
-  const { group, members, expenses, splits, balances, loading, error, refresh } = useGroup(groupId)
+  const { group, members, expenses, splits, settlements, balances, loading, error, refresh } = useGroup(groupId)
 
   // Usuario actual
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string | null } | null>(null)
 
   // UI estado
-  const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [inviting, setInviting] = useState(false)
+  const [showBalanceDetails, setShowBalanceDetails] = useState(false)
 
   // Hook para operaciones de gastos
   const memberIds = members.map(m => m.user_id)
   const { createExpense, updateExpense, deleteExpense, creating } = useExpenseOperations(
     groupId || '',
     memberIds,
-    () => {
-      refresh()
-      setShowExpenseForm(false)
-    }
+    currentUser?.id || '',
+    refresh
+  )
+
+  // Hook para operaciones de liquidaciones
+  const { createSettlement, deleteSettlement, creating: creatingSettlement } = useSettlementOperations(
+    groupId || '',
+    refresh
+  )
+
+  // Hook para detalles de balances
+  const { allDetails, iOwe, oweMe } = useBalanceDetails(
+    expenses,
+    splits,
+    settlements,
+    members,
+    currentUser?.id || null
   )
 
   // Obtener usuario actual
@@ -192,39 +211,12 @@ export default function GroupDetail() {
     <Layout>
       <div className="max-w-6xl mx-auto p-4">
         {/* Header del grupo */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{group.name}</h1>
-              <p className="text-blue-100">{group.description}</p>
-              <p className="text-xs text-blue-200 mt-2">
-                Creado el {new Date(group.created_at).toLocaleDateString()}
-              </p>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <button
-                onClick={() => router.push('/dashboard')}
-                className="px-4 py-2 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-colors"
-              >
-                ← Dashboard
-              </button>
-              <button
-                onClick={leaveGroup}
-                className="px-4 py-2 bg-yellow-500 text-white font-semibold rounded-lg hover:bg-yellow-600 transition-colors"
-              >
-                Salir del grupo
-              </button>
-              {group.created_by === currentUser?.id && (
-                <button
-                  onClick={deleteGroup}
-                  className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors"
-                >
-                  Eliminar grupo
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
+        <GroupHeader
+          group={group}
+          currentUserId={currentUser?.id || null}
+          onLeave={leaveGroup}
+          onDelete={deleteGroup}
+        />
 
         {/* Grid de 2 columnas */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -236,31 +228,21 @@ export default function GroupDetail() {
               onInvite={handleInvite}
               inviting={inviting}
             />
-            <BalanceCard balances={balances} />
+            <BalanceCard 
+              balances={balances} 
+              onShowDetails={() => setShowBalanceDetails(true)}
+            />
           </div>
 
           {/* Columna derecha */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Botón para mostrar formulario */}
-            {!showExpenseForm && (
-              <button
-                onClick={() => setShowExpenseForm(true)}
-                className="w-full py-4 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold text-lg rounded-xl hover:from-green-700 hover:to-teal-600 transition-all shadow-lg"
-              >
-                + Agregar Gasto
-              </button>
-            )}
-
-            {/* Formulario de crear gasto */}
-            {showExpenseForm && (
-              <ExpenseForm
-                members={members}
-                onSubmit={createExpense}
-                onCancel={() => setShowExpenseForm(false)}
-                creating={creating}
-                displayNameFor={displayNameFor}
-              />
-            )}
+            {/* Botón y formulario de crear gasto */}
+            <ExpenseComposer
+              members={members}
+              onCreate={createExpense}
+              creating={creating}
+              displayNameFor={displayNameFor}
+            />
 
             {/* Lista de gastos */}
             <ExpenseList
@@ -272,8 +254,40 @@ export default function GroupDetail() {
               onDelete={deleteExpense}
               displayNameFor={displayNameFor}
             />
+
+            {/* Sección de liquidaciones */}
+            <SettlementSection
+              balances={balances}
+              settlements={settlements}
+              members={members}
+              currentUserId={currentUser?.id || null}
+              onCreateSettlement={createSettlement}
+              onDeleteSettlement={deleteSettlement}
+              creating={creatingSettlement}
+              displayNameFor={displayNameFor}
+            />
+
+            {/* Historial de actividad */}
+            <ActivityHistory
+              expenses={expenses}
+              settlements={settlements}
+              displayNameFor={displayNameFor}
+            />
           </div>
         </div>
+
+        {/* Modal de detalles de balances */}
+        <BalanceDetailsModal
+          isOpen={showBalanceDetails}
+          onClose={() => setShowBalanceDetails(false)}
+          allDetails={allDetails}
+          currentUserId={currentUser?.id || null}
+          onCreateSettlement={async (fromUserId, toUserId, amount) => {
+            await createSettlement(fromUserId, toUserId, amount)
+            setShowBalanceDetails(false)
+          }}
+          creatingSettlement={creatingSettlement}
+        />
       </div>
     </Layout>
   )

@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient'
 import type { Settlement } from './types'
+import { createSettlementSchema, validateSchema } from '../validation/schemas'
 
 /**
  * Servicio para manejar liquidaciones de deudas
@@ -33,22 +34,42 @@ export class SettlementService {
     toUserId: string,
     amount: number
   ): Promise<{ success: boolean; error?: string }> {
-    if (amount <= 0) {
-      return { success: false, error: 'El monto debe ser mayor a 0' }
-    }
+    // Validar con Zod
+    const validation = validateSchema(createSettlementSchema, {
+      group_id: groupId,
+      from_user_id: fromUserId,
+      to_user_id: toUserId,
+      amount
+    })
 
-    if (fromUserId === toUserId) {
-      return { success: false, error: 'No puedes liquidar contigo mismo' }
+    if (!validation.success) {
+      return { success: false, error: validation.errors.join(', ') }
     }
 
     const { error } = await supabase
       .from('settlements')
       .insert({
-        group_id: groupId,
-        from_user_id: fromUserId,
-        to_user_id: toUserId,
-        amount
+        group_id: validation.data.group_id,
+        from_user_id: validation.data.from_user_id,
+        to_user_id: validation.data.to_user_id,
+        amount: validation.data.amount
       })
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    return { success: true }
+  }
+
+  /**
+   * Elimina una liquidación
+   */
+  static async deleteSettlement(settlementId: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase
+      .from('settlements')
+      .delete()
+      .eq('id', settlementId)
 
     if (error) {
       return { success: false, error: error.message }

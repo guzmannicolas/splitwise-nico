@@ -1,21 +1,33 @@
+import { useState } from 'react'
 import type { Balance } from '../../lib/services/types'
 
 interface BalanceCardProps {
   balances: Balance[]
+  onShowDetails?: () => void
 }
 
 /**
  * Componente para mostrar los balances de los miembros
  * Responsabilidad única: Visualización de balances
  */
-export default function BalanceCard({ balances }: BalanceCardProps) {
+export default function BalanceCard({ balances, onShowDetails }: BalanceCardProps) {
   if (balances.length === 0) {
     return null
   }
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-purple-100">
-      <h2 className="text-2xl font-bold text-purple-700 mb-4">Balances</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold text-purple-700">Balances</h2>
+        {onShowDetails && (
+          <button
+            onClick={onShowDetails}
+            className="px-3 py-1 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Ver detalles
+          </button>
+        )}
+      </div>
       <div className="space-y-3">
         {balances.map(b => (
           <div

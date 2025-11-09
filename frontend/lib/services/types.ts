@@ -21,6 +21,9 @@ export interface Expense {
   amount: number
   paid_by: string
   created_at: string
+  created_by?: string
+  updated_at?: string
+  updated_by?: string
   group_id?: string
   profiles?: {
     full_name: string
@@ -48,6 +51,14 @@ export interface Balance {
   balance: number // positivo = le deben, negativo = debe
 }
 
+export interface DebtDetail {
+  from_user_id: string // quien debe
+  to_user_id: string // a quien le debe
+  amount: number
+  debtor_name: string
+  creditor_name: string
+}
+
 export type SplitType = 'equal' | 'full' | 'custom'
 
 export interface CreateExpenseData {
@@ -58,6 +69,8 @@ export interface CreateExpenseData {
   splitType: SplitType
   customSplits?: Record<string, number>
   memberIds: string[]
+  fullBeneficiaryId?: string // Para splitType 'full': quién debe el total
+  created_by: string // Usuario que crea el gasto
 }
 
 export interface UpdateExpenseData {
@@ -67,4 +80,6 @@ export interface UpdateExpenseData {
   splitType: SplitType
   customSplits?: Record<string, number>
   memberIds: string[]
+  fullBeneficiaryId?: string
+  updated_by: string // Usuario que modifica el gasto
 }

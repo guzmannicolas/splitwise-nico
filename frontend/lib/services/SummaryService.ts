@@ -1,4 +1,5 @@
-import { supabase } from '../supabaseClient'
+// Note: Avoid importing supabase at module scope to keep pure helpers testable without envs.
+// We'll dynamically import the client inside the async method that actually needs it.
 
 export interface GlobalSummary {
   owedByMe: number // lo que debo pagar a otros
@@ -20,6 +21,7 @@ export class SummaryService {
    * - owedToMe: suma de expense_splits.amount join expenses donde paid_by = currentUser
    */
   static async getUserSummary(userId: string): Promise<{ data: GlobalSummary | null; error: any }> {
+    const { supabase } = await import('../supabaseClient')
     // 1) Suma de lo que yo debo por grupo
     const { data: owedRows, error: owedErr } = await supabase
       .from('expense_splits')

@@ -117,9 +117,17 @@ export default function ExpenseList({
                         : shortId(expense.paid_by))}
                   </span>
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-500 mt-1">
+                  Creado por {displayNameFor(expense.created_by || expense.paid_by)} el{' '}
                   {new Date(expense.created_at).toLocaleDateString()}
                 </p>
+                {expense.updated_at && expense.updated_by && (
+                  <p className="text-xs text-gray-400 italic mt-1">
+                    Última modificación por {displayNameFor(expense.updated_by)} el{' '}
+                    {new Date(expense.updated_at).toLocaleDateString()} a las{' '}
+                    {new Date(expense.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <p className="text-xl font-extrabold text-blue-700">

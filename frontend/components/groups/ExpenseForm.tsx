@@ -8,7 +8,8 @@ interface ExpenseFormProps {
     amount: number,
     paidBy: string,
     splitType: SplitType,
-    customSplits?: Record<string, string>
+    customSplits?: Record<string, string>,
+    fullBeneficiaryId?: string
   ) => Promise<void>
   onCancel: () => void
   creating: boolean
@@ -31,6 +32,7 @@ export default function ExpenseForm({
   const [paidBy, setPaidBy] = useState('')
   const [splitType, setSplitType] = useState<SplitType>('equal')
   const [customSplits, setCustomSplits] = useState<Record<string, string>>({})
+  const [fullBeneficiaryId, setFullBeneficiaryId] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +48,18 @@ export default function ExpenseForm({
       return
     }
 
-    await onSubmit(description, amountNum, paidBy, splitType, customSplits)
+    if (splitType === 'full') {
+      if (!fullBeneficiaryId) {
+        alert('Selecciona quién debe el total al pagador')
+        return
+      }
+      if (fullBeneficiaryId === paidBy) {
+        alert('El beneficiario no puede ser el mismo que pagó')
+        return
+      }
+    }
+
+    await onSubmit(description, amountNum, paidBy, splitType, customSplits, fullBeneficiaryId || undefined)
 
     // Limpiar formulario
     setDescription('')
@@ -54,6 +67,7 @@ export default function ExpenseForm({
     setPaidBy('')
     setSplitType('equal')
     setCustomSplits({})
+    setFullBeneficiaryId('')
   }
 
   return (
@@ -121,8 +135,29 @@ export default function ExpenseForm({
               className="mr-2"
               disabled={creating}
             />
-            <span>Solo el pagador (gasto personal)</span>
+            <span>El pagador es adeudado el total</span>
           </label>
+      {splitType === 'full' && (
+        <div className="border rounded p-3 bg-yellow-50">
+          <p className="text-sm text-gray-600 mb-2">Selecciona quién debe reintegrar el 100% al pagador.</p>
+          <select
+            value={fullBeneficiaryId}
+            onChange={e => setFullBeneficiaryId(e.target.value)}
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-yellow-400"
+            disabled={creating || !paidBy}
+            required
+          >
+            <option value="">Beneficiario que debe el total</option>
+            {members
+              .filter(m => m.user_id !== paidBy)
+              .map(m => (
+                <option key={m.user_id} value={m.user_id}>
+                  {displayNameFor(m.user_id)}
+                </option>
+              ))}
+          </select>
+        </div>
+      )}
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"

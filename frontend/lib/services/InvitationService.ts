@@ -1,5 +1,6 @@
 import { GroupService } from './GroupService'
 import { SupabaseEdgeEmailProvider } from './EmailProvider'
+import { inviteSchema, validateSchema } from '../validation/schemas'
 
 interface InvitationResult {
   ok: boolean
@@ -12,8 +13,14 @@ export class InvitationService {
   private emailProvider = new SupabaseEdgeEmailProvider()
 
   async invite(groupId: string, email: string, invitedByUserId: string, siteUrl: string, inviterDisplayName?: string, groupName?: string): Promise<InvitationResult> {
+    // 0. Validar datos con Zod
+    const validation = validateSchema(inviteSchema, { email, group_id: groupId, invited_by: invitedByUserId })
+    if (!validation.success) {
+      return { ok: false, message: validation.errors.join(', ') }
+    }
+
     // 1. Crear registro de invitación en BD
-    const { data: invitation, error } = await GroupService.inviteMember(groupId, email, invitedByUserId)
+    const { data: invitation, error } = await GroupService.inviteMember(groupId, validation.data.email, invitedByUserId)
     if (error) {
       return { ok: false, message: 'Error al crear invitación: ' + (error.message || 'Desconocido') }
     }

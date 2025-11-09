@@ -1,6 +1,7 @@
 import { supabase } from '../supabaseClient'
 import type { Expense, ExpenseSplit, CreateExpenseData, UpdateExpenseData } from './types'
 import { getSplitStrategy } from './splits'
+import { createExpenseSchema, updateExpenseSchema, validateSchema } from '../validation/schemas'
 
 /**
  * Servicio para manejar operaciones relacionadas con gastos
@@ -14,7 +15,7 @@ export class ExpenseService {
     const { data, error } = await supabase
       .from('expenses')
       .select(`
-        id, description, amount, paid_by, created_at,
+        id, description, amount, paid_by, created_at, created_by, updated_at, updated_by,
         profiles:paid_by ( full_name )
       `)
       .eq('group_id', groupId)
@@ -44,20 +45,21 @@ export class ExpenseService {
    */
   static async createExpense(expenseData: CreateExpenseData): Promise<{ success: boolean; error?: string }> {
     try {
-      // 1. Validar datos
-      const validation = this.validateExpenseData(expenseData)
-      if (!validation.valid) {
-        return { success: false, error: validation.error }
+      // 1. Validar datos con Zod
+      const validation = validateSchema(createExpenseSchema, expenseData)
+      if (!validation.success) {
+        return { success: false, error: validation.errors.join(', ') }
       }
 
       // 2. Crear el gasto
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
-          description: expenseData.description,
-          amount: expenseData.amount,
-          paid_by: expenseData.paid_by,
-          group_id: expenseData.group_id
+          description: validation.data.description,
+          amount: validation.data.amount,
+          paid_by: validation.data.paid_by,
+          group_id: validation.data.group_id,
+          created_by: validation.data.created_by
         })
         .select()
         .single()
@@ -67,13 +69,15 @@ export class ExpenseService {
       }
 
       // 3. Calcular splits usando Strategy
-      const strategy = getSplitStrategy(expenseData.splitType)
+      const strategy = getSplitStrategy(validation.data.splitType)
       const splits = strategy.build(
         expense.id,
-        expenseData.amount,
-        expenseData.paid_by,
-        expenseData.memberIds,
-        expenseData.customSplits
+        validation.data.amount,
+        validation.data.paid_by,
+        validation.data.memberIds,
+        validation.data.splitType === 'full' && validation.data.fullBeneficiaryId
+          ? { [validation.data.fullBeneficiaryId]: validation.data.amount }
+          : validation.data.customSplits
       )
 
       const { error: splitsError } = await supabase
@@ -100,22 +104,21 @@ export class ExpenseService {
     updateData: UpdateExpenseData
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // 1. Validar datos
-      const validation = this.validateExpenseData({
-        ...updateData,
-        group_id: '', // No necesario para update
-      })
-      if (!validation.valid) {
-        return { success: false, error: validation.error }
+      // 1. Validar datos con Zod
+      const validation = validateSchema(updateExpenseSchema, updateData)
+      if (!validation.success) {
+        return { success: false, error: validation.errors.join(', ') }
       }
 
       // 2. Actualizar el gasto
       const { error: expenseError } = await supabase
         .from('expenses')
         .update({
-          description: updateData.description,
-          amount: updateData.amount,
-          paid_by: updateData.paid_by
+          description: validation.data.description,
+          amount: validation.data.amount,
+          paid_by: validation.data.paid_by,
+          updated_by: validation.data.updated_by,
+          updated_at: new Date().toISOString()
         })
         .eq('id', expenseId)
 
@@ -130,13 +133,15 @@ export class ExpenseService {
         .eq('expense_id', expenseId)
 
       // 4. Crear nuevos splits usando Strategy
-      const strategy = getSplitStrategy(updateData.splitType)
+      const strategy = getSplitStrategy(validation.data.splitType)
       const splits = strategy.build(
         expenseId,
-        updateData.amount,
-        updateData.paid_by,
-        updateData.memberIds,
-        updateData.customSplits
+        validation.data.amount,
+        validation.data.paid_by,
+        validation.data.memberIds,
+        validation.data.splitType === 'full' && validation.data.fullBeneficiaryId
+          ? { [validation.data.fullBeneficiaryId]: validation.data.amount }
+          : validation.data.customSplits
       )
 
       const { error: splitsError } = await supabase
@@ -168,40 +173,5 @@ export class ExpenseService {
     }
 
     return { success: true }
-  }
-
-  // Strategy pattern elimina necesidad de calculateSplits interno
-
-  /**
-   * Valida los datos de un gasto
-   */
-  private static validateExpenseData(data: CreateExpenseData): { valid: boolean; error?: string } {
-    if (!data.description || data.description.trim().length === 0) {
-      return { valid: false, error: 'La descripción es requerida' }
-    }
-
-    if (!data.amount || data.amount <= 0) {
-      return { valid: false, error: 'El monto debe ser mayor a 0' }
-    }
-
-    if (!data.paid_by) {
-      return { valid: false, error: 'Debes seleccionar quién pagó' }
-    }
-
-    if (!data.memberIds || data.memberIds.length === 0) {
-      return { valid: false, error: 'El grupo debe tener al menos un miembro' }
-    }
-
-    // Validación para splits personalizados
-    if (data.splitType === 'custom' && data.customSplits) {
-      const total = Object.values(data.customSplits).reduce((sum, amt) => sum + amt, 0)
-      const tolerance = 0.01 // Tolerancia de 1 centavo
-      
-      if (Math.abs(total - data.amount) > tolerance) {
-        return { valid: false, error: `Los montos personalizados deben sumar ${data.amount.toFixed(2)}` }
-      }
-    }
-
-    return { valid: true }
   }
 }

@@ -4,6 +4,10 @@ import Layout from '../components/Layout'
 import { useAuthUser } from '../lib/hooks/useAuthUser'
 import { useGlobalSummary } from '../lib/hooks/useGlobalSummary'
 import DashboardSummary from '../components/DashboardSummary'
+import DashboardSidebar from '../components/dashboard/DashboardSidebar'
+import RecentExpenses from '../components/dashboard/RecentExpenses'
+import GroupsPanel from '../components/dashboard/GroupsPanel'
+import CreateGroupForm from '../components/dashboard/CreateGroupForm'
 
 interface Group {
   id: string
@@ -37,11 +41,14 @@ interface Settlement {
   created_at: string
 }
 
+type ViewType = 'summary' | 'expenses' | 'groups' | 'create'
+
 export default function Dashboard() {
   // Auth user centralizado
   const { user: authUser, loading: authLoading } = useAuthUser()
 
   // Estado UI y datos
+  const [activeView, setActiveView] = useState<ViewType>('summary')
   const [groups, setGroups] = useState<Group[]>([])
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDesc, setNewGroupDesc] = useState('')
@@ -133,90 +140,47 @@ export default function Dashboard() {
 
   return (
     <Layout>
-      <div className="space-y-6 px-2 py-4">
-        {/* Resumen global */}
-        <DashboardSummary summary={summary || null} loading={authLoading || summaryLoading} />
-
-        {/* Últimos gastos */}
-        <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">Últimos gastos</h2>
-          {recentExpenses.length > 0 ? (
-            <ul className="divide-y divide-gray-200">
-              {recentExpenses.slice(0,10).map(e => (
-                <li key={e.id} className="py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 hover:bg-blue-50 transition-colors px-2 rounded">
-                  <div>
-                    <p className="font-semibold text-gray-800">{e.description} <span className="text-gray-400 text-sm">· {new Date(e.created_at).toLocaleDateString()}</span></p>
-                    <p className="text-sm text-gray-500 mt-1">{groups.find(g => g.id === e.group_id)?.name || 'Grupo'} — Pagado por {e.profiles?.full_name || e.paid_by.slice(0,8)}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-blue-700 text-lg">${e.amount.toFixed(2)}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-gray-400 text-center py-4">No hay gastos recientes</p>
-          )}
+      <div className="max-w-7xl mx-auto p-4">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-blue-100 mt-1">Administra tus grupos y finanzas</p>
         </div>
 
-        {/* Lista de grupos */}
-        <div className="bg-white shadow-xl rounded-2xl border border-blue-100">
-          <div className="px-6 py-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Tus grupos</h2>
-            {loadingGroups ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto"></div>
-              </div>
-            ) : groups.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {groups.map(group => (
-                  <div
-                    key={group.id}
-                    className="bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200 rounded-xl p-5 hover:shadow-lg hover:scale-99 cursor-pointer transition-all duration-200"
-                    onClick={() => window.location.href = `/groups/${group.id}`}
-                  >
-                    <h3 className="font-bold text-lg text-blue-800">{group.name}</h3>
-                    {group.description && (
-                      <p className="text-gray-600 text-sm mt-2">{group.description}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center py-8">No hay grupos todavía</p>
+        {/* Layout: Sidebar + Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Sidebar izquierdo */}
+          <div className="lg:col-span-1">
+            <DashboardSidebar
+              activeView={activeView}
+              onChange={setActiveView}
+              groupsCount={groups.length}
+            />
+          </div>
+
+          {/* Contenido derecho */}
+          <div className="lg:col-span-3">
+            {activeView === 'summary' && (
+              <DashboardSummary summary={summary || null} loading={authLoading || summaryLoading} />
+            )}
+
+            {activeView === 'expenses' && (
+              <RecentExpenses expenses={recentExpenses} groups={groups} />
+            )}
+
+            {activeView === 'groups' && (
+              <GroupsPanel groups={groups} loading={loadingGroups} summary={summary || null} />
+            )}
+
+            {activeView === 'create' && (
+              <CreateGroupForm onCreate={async (name, description) => {
+                const fakeEvent = { preventDefault: () => {} } as any
+                setNewGroupName(name)
+                setNewGroupDesc(description)
+                await createGroup(fakeEvent)
+              }} />
             )}
           </div>
-        </div>
-                {/* Crear nuevo grupo */}
-        <div className="bg-gradient-to-br from-white to-indigo-50 shadow-xl rounded-2xl p-6 border border-blue-100">
-          <h2 className="text-2xl font-bold text-blue-700 mb-4">Crear nuevo grupo</h2>
-          <form onSubmit={createGroup} className="space-y-4">
-            <div>
-              <input
-                type="text"
-                placeholder="Nombre del grupo"
-                value={newGroupName}
-                onChange={e => setNewGroupName(e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-                required
-              />
-            </div>
-            <div>
-              <input
-                type="text"
-                placeholder="Descripción (opcional)"
-                value={newGroupDesc}
-                onChange={e => setNewGroupDesc(e.target.value)}
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold p-3 rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200"
-            >
-              Crear Grupo
-            </button>
-          </form>
         </div>
       </div>
     </Layout>

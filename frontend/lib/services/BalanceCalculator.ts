@@ -21,12 +21,15 @@ export class BalanceCalculator {
 
     // Procesar gastos
     expenses.forEach(expense => {
-      // El que pagó tiene balance positivo (le deben)
-      const currentBalance = balanceMap.get(expense.paid_by) || 0
-      balanceMap.set(expense.paid_by, currentBalance + expense.amount)
-
-      // Los que deben tienen balance negativo
+      // Obtener splits del gasto
       const expenseSplits = splits.filter(s => s.expense_id === expense.id)
+      // El pagador solo debe recibir el monto que OTROS le deben (suma de splits)
+      // Antes se sumaba el monto completo del gasto, lo que inflaba su balance.
+      const totalOwedToPayer = expenseSplits.reduce((acc, s) => acc + s.amount, 0)
+      const currentBalance = balanceMap.get(expense.paid_by) || 0
+      balanceMap.set(expense.paid_by, currentBalance + totalOwedToPayer)
+
+      // Los deudores (beneficiarios distintos del pagador) restan su parte
       expenseSplits.forEach(split => {
         const userBalance = balanceMap.get(split.user_id) || 0
         balanceMap.set(split.user_id, userBalance - split.amount)
@@ -87,7 +90,10 @@ export class BalanceCalculator {
     // Sumar lo que pagó
     expenses.forEach(expense => {
       if (expense.paid_by === userId) {
-        balance += expense.amount
+        // Usar sólo lo que otros miembros le deben (suma de splits del gasto)
+        const splitsForExpense = splits.filter(s => s.expense_id === expense.id)
+        const totalOwedToPayer = splitsForExpense.reduce((acc, s) => acc + s.amount, 0)
+        balance += totalOwedToPayer
       }
     })
 
