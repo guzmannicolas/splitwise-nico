@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import DivisionModal from './DivisionModal'
 import type { Member, SplitType } from '../../lib/services/types'
 
 interface ExpenseFormProps {
@@ -46,6 +47,7 @@ export default function ExpenseForm({
   const [payerMode, setPayerMode] = useState<PayerMode>('single')
   const [multiplePayerAmounts, setMultiplePayerAmounts] = useState<Record<string, string>>({})
   const [showParticipantSelector, setShowParticipantSelector] = useState(false)
+  const [showDivisionModal, setShowDivisionModal] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,14 +127,14 @@ export default function ExpenseForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-5 bg-white p-6 rounded-2xl shadow-lg max-w-lg mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-5 bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg max-w-lg mx-auto animate-slideUp">
         {/* Header */}
         <div className="flex items-center justify-between border-b pb-4">
-          <h2 className="text-xl font-bold text-gray-800">Añadir un gasto</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Añadir un gasto</h2>
           <button
             type="button"
             onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+            className="text-gray-500 hover:text-gray-700 text-2xl leading-none transition-colors"
             disabled={creating}
           >
             ×
@@ -146,11 +148,11 @@ export default function ExpenseForm({
             <button
               type="button"
               onClick={() => setShowParticipantSelector(!showParticipantSelector)}
-              className="w-full flex items-center gap-2 p-3 border border-gray-300 rounded-lg hover:border-teal-500 transition-colors bg-white"
+              className="w-full flex items-center gap-2 p-3 border border-gray-300 rounded-lg hover:border-teal-500 transition-all duration-200 bg-white hover:shadow-md"
               disabled={creating}
             >
               <span className="text-xl">👥</span>
-              <span className="text-gray-700 flex-1 text-left">
+              <span className="text-gray-700 flex-1 text-left text-sm sm:text-base">
                 {selectedParticipants.length === members.length 
                   ? 'Todos los de ' + (members[0] ? 'Testeo' : 'grupo')
                   : `${selectedParticipants.length} persona${selectedParticipants.length !== 1 ? 's' : ''}`
@@ -161,11 +163,11 @@ export default function ExpenseForm({
 
             {/* Dropdown de participantes */}
             {showParticipantSelector && (
-              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-slideUp">
                 {members.map(member => (
                   <label
                     key={member.user_id}
-                    className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+                    className="flex items-center gap-3 p-3 hover:bg-teal-50 cursor-pointer transition-colors duration-150"
                   >
                     <input
                       type="checkbox"
@@ -173,7 +175,7 @@ export default function ExpenseForm({
                       onChange={() => toggleParticipant(member.user_id)}
                       className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
                     />
-                    <span className="text-gray-700">{displayNameFor(member.user_id)}</span>
+                    <span className="text-gray-700 text-sm sm:text-base">{displayNameFor(member.user_id)}</span>
                   </label>
                 ))}
               </div>
@@ -183,9 +185,9 @@ export default function ExpenseForm({
 
         {/* Descripción y Monto */}
         <div className="space-y-4">
-          <div className="flex items-start gap-4">
-            <div className="bg-gray-100 p-3 rounded-lg">
-              <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-3 rounded-lg shadow-sm">
+              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
@@ -194,19 +196,19 @@ export default function ExpenseForm({
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
-                className="w-full text-gray-400 text-sm border-0 border-b border-gray-200 focus:border-teal-500 focus:outline-none py-2"
+                className="w-full text-gray-500 text-sm sm:text-base border-0 border-b border-gray-200 focus:border-teal-500 focus:outline-none py-2 transition-colors"
                 placeholder="Introduce una descripción"
                 required
                 disabled={creating}
               />
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl text-gray-700">$</span>
+                <span className="text-xl sm:text-2xl text-gray-700">$</span>
                 <input
                   type="number"
                   step="0.01"
                   value={amount}
                   onChange={e => setAmount(e.target.value)}
-                  className="text-4xl font-light text-gray-700 border-0 focus:outline-none w-full"
+                  className="text-3xl sm:text-4xl font-light text-gray-700 border-0 focus:outline-none w-full transition-all"
                   placeholder="0.00"
                   required
                   disabled={creating}
@@ -230,15 +232,22 @@ export default function ExpenseForm({
               <span>{getPayerDisplayText()}</span>
             </button>
           </div>
-          
-          <div className="text-sm text-gray-500">
-            y dividido{' '}
-            <span className="text-teal-600 font-medium">
-              a partes iguales
-            </span>{' '}
-            .
-            {selectedParticipants.length > 0 && amount && (
-              <span className="block mt-1">
+          <div className="text-xs sm:text-sm text-gray-500 flex flex-wrap items-center gap-2 mt-2">
+            <span>y dividido</span>
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-100 to-teal-200 text-teal-700 font-semibold shadow-sm hover:shadow-md hover:from-teal-200 hover:to-teal-300 transition-all duration-200 transform hover:scale-105"
+              onClick={() => setShowDivisionModal(true)}
+              disabled={creating}
+            >
+              <span className="text-base sm:text-lg">⚡</span>
+              <span className="text-xs sm:text-sm">
+                {splitType === 'equal' ? 'a partes iguales' : splitType === 'custom' ? 'por monto' : splitType === 'percent' ? 'por porcentaje' : 'cada uno paga su parte'}
+              </span>
+            </button>
+            <span>.</span>
+            {selectedParticipants.length > 0 && amount && splitType === 'equal' && (
+              <span className="text-xs text-teal-600 font-medium">
                 (${calculateEqualSplitAmount().toFixed(2)}/persona)
               </span>
             )}
@@ -246,62 +255,76 @@ export default function ExpenseForm({
         </div>
 
         {/* Fecha y opciones adicionales */}
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <button
             type="button"
-            className="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm hover:bg-gray-200 transition-colors"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm hover:bg-gray-200 transition-all duration-200 hover:shadow-md"
             disabled={creating}
           >
-            {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+            📅 {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
           </button>
           <button
             type="button"
-            className="px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-sm hover:bg-gray-200 transition-colors"
+            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm hover:bg-gray-200 transition-all duration-200 hover:shadow-md"
             disabled={creating}
           >
-            Añadir imagen/notas
+            🖼️ Imagen/notas
           </button>
         </div>
 
         {/* Categoría */}
         <button
           type="button"
-          className="w-full px-4 py-3 bg-gray-50 text-gray-600 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+          className="w-full px-4 py-3 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-600 rounded-lg text-sm hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200"
           disabled={creating}
         >
-          Testeo
+          🏷️ Testeo
         </button>
 
         {/* Botones de acción */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             type="button"
             onClick={onCancel}
             disabled={creating}
-            className="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-all duration-200 disabled:opacity-50"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={creating}
-            className="flex-1 py-3 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto flex-1 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            {creating ? 'Guardando...' : 'Guardar'}
+            {creating ? '⏳ Guardando...' : '✓ Guardar'}
           </button>
         </div>
       </form>
 
-      {/* Modal de selección de pagador */}
+  {/* Modal de selección de pagador */}
+      {/* Modal de división de gasto */}
+      <DivisionModal
+        open={showDivisionModal}
+        onClose={() => setShowDivisionModal(false)}
+        amount={parseFloat(amount) || 0}
+        members={members}
+        selectedParticipants={selectedParticipants}
+        displayNameFor={displayNameFor}
+        onApply={(splits, type) => {
+          setShowDivisionModal(false)
+          setSplitType(type)
+          setCustomSplits(Object.fromEntries(Object.entries(splits).map(([k, v]) => [k, v.toString()])))
+        }}
+      />
       {showPayerModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-slideUp">
             <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-800">Elige el pagador</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-800">Elige el pagador</h3>
               <button
                 type="button"
                 onClick={() => setShowPayerModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+                className="text-gray-500 hover:text-gray-700 text-2xl leading-none transition-colors"
               >
                 ×
               </button>
@@ -319,16 +342,16 @@ export default function ExpenseForm({
                       setPaidBy(member.user_id)
                       setShowPayerModal(false)
                     }}
-                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-colors ${
+                    className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
                       payerMode === 'single' && paidBy === member.user_id
-                        ? 'border-teal-500 bg-teal-50'
-                        : 'border-gray-200 hover:border-teal-300'
+                        ? 'border-teal-500 bg-teal-50 shadow-md'
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50'
                     }`}
                   >
-                    <div className="w-10 h-10 bg-gray-700 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-teal-500 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold shadow-sm">
                       {displayNameFor(member.user_id).charAt(0)}
                     </div>
-                    <span className="text-gray-800 font-medium">
+                    <span className="text-sm sm:text-base text-gray-800 font-medium">
                       {displayNameFor(member.user_id)}
                     </span>
                   </button>
@@ -434,9 +457,9 @@ export default function ExpenseForm({
               <button
                 type="button"
                 onClick={() => setShowPayerModal(false)}
-                className="w-full py-3 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors mt-4"
+                className="w-full py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 mt-4"
               >
-                Confirmar
+                ✓ Confirmar
               </button>
             </div>
           </div>

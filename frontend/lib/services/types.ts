@@ -61,7 +61,7 @@ export interface DebtDetail {
   creditor_name: string
 }
 
-export type SplitType = 'equal' | 'full' | 'custom'
+export type SplitType = 'equal' | 'full' | 'custom' | 'percent' | 'each'
 
 export interface CreateExpenseData {
   description: string
