@@ -32,6 +32,7 @@ export default function ExpenseList({
   displayNameFor
 }: ExpenseListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [isExpanded, setIsExpanded] = useState(true)
   const [editingId, setEditingId] = useState<string>('')
   const [editDesc, setEditDesc] = useState('')
   const [editAmount, setEditAmount] = useState('')
@@ -90,15 +91,28 @@ export default function ExpenseList({
   if (expenses.length === 0) {
     return (
       <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-        <h2 className="text-2xl font-bold text-blue-700 mb-6">Gastos</h2>
-        <p className="text-gray-500 text-center">No hay gastos todavía</p>
+        <h2 
+          className="text-2xl font-bold text-blue-700 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <span>Gastos</span>
+          <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+        </h2>
+        {isExpanded && <p className="text-gray-500 text-center">No hay gastos todavía</p>}
       </div>
     )
   }
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-      <h2 className="text-2xl font-bold text-blue-700 mb-6">Gastos</h2>
+      <h2 
+        className="text-2xl font-bold text-blue-700 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span>Gastos</span>
+        <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+      </h2>
+      {isExpanded && (
       <div className="space-y-4">
         {expenses.map(expense => (
           <div
@@ -299,6 +313,7 @@ export default function ExpenseList({
           </div>
         ))}
       </div>
+      )}
     </div>
   )
 }

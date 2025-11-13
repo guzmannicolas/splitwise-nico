@@ -24,16 +24,6 @@ export default function DashboardSidebar({ activeView, onChange, groupsCount }: 
           💰 Resumen General
         </button>
         <button
-          onClick={() => onChange('expenses')}
-          className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
-            activeView === 'expenses'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          📝 Últimos Gastos
-        </button>
-        <button
           onClick={() => onChange('groups')}
           className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
             activeView === 'groups'
@@ -44,14 +34,14 @@ export default function DashboardSidebar({ activeView, onChange, groupsCount }: 
           👥 Tus Grupos ({groupsCount})
         </button>
         <button
-          onClick={() => onChange('create')}
+          onClick={() => onChange('expenses')}
           className={`w-full text-left px-4 py-3 rounded-lg font-semibold transition-all ${
-            activeView === 'create'
+            activeView === 'expenses'
               ? 'bg-blue-600 text-white shadow-md'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
-          ➕ Crear Grupo
+          📝 Últimos Gastos
         </button>
       </nav>
     </div>

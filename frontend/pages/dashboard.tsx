@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabaseClient'
 import Layout from '../components/Layout'
 import { useAuthUser } from '../lib/hooks/useAuthUser'
@@ -46,6 +47,7 @@ type ViewType = 'summary' | 'expenses' | 'groups' | 'create'
 export default function Dashboard() {
   // Auth user centralizado
   const { user: authUser, loading: authLoading } = useAuthUser()
+  const router = useRouter()
 
   // Estado UI y datos
   const [activeView, setActiveView] = useState<ViewType>('summary')
@@ -131,7 +133,13 @@ export default function Dashboard() {
       
       setNewGroupName('')
       setNewGroupDesc('')
-      fetchGroups(authUser.id)
+      const created = (data && data[0]) as Group | undefined
+      if (created?.id) {
+        router.push(`/groups/${created.id}`)
+      } else {
+        // Fallback: refrescar lista y mostrar vista de grupos
+        await fetchGroups(authUser.id)
+      }
     } catch (error) {
       console.error('Error creating group:', error)
       alert('Error al crear el grupo: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
@@ -169,16 +177,62 @@ export default function Dashboard() {
             )}
 
             {activeView === 'groups' && (
-              <GroupsPanel groups={groups} loading={loadingGroups} summary={summary || null} />
+              <>
+                <GroupsPanel 
+                  groups={groups} 
+                  loading={loadingGroups} 
+                  summary={summary || null}
+                  onCreateGroup={() => setActiveView('create')}
+                />
+              </>
             )}
 
             {activeView === 'create' && (
-              <CreateGroupForm onCreate={async (name, description) => {
-                const fakeEvent = { preventDefault: () => {} } as any
-                setNewGroupName(name)
-                setNewGroupDesc(description)
-                await createGroup(fakeEvent)
-              }} />
+              <>
+                <CreateGroupForm onCreate={async (name, description) => {
+                  try {
+                    if (!authUser) {
+                      throw new Error('No hay usuario autenticado')
+                    }
+                    const { data, error } = await supabase
+                      .from('groups')
+                      .insert([
+                        {
+                          name: name,
+                          description: description,
+                          created_by: authUser.id
+                        }
+                      ])
+                      .select()
+                    
+                    if (error) {
+                      console.error('Error detallado:', error)
+                      alert('Error al crear el grupo: ' + (error.message || JSON.stringify(error)))
+                      return
+                    }
+                    
+                    console.log('Grupo creado:', data)
+                    const created = (data && data[0]) as Group | undefined
+                    if (created?.id) {
+                      router.push(`/groups/${created.id}`)
+                    } else {
+                      await fetchGroups(authUser.id)
+                      setActiveView('groups')
+                    }
+                  } catch (error) {
+                    console.error('Error creating group:', error)
+                    alert('Error al crear el grupo: ' + (error instanceof Error ? error.message : JSON.stringify(error)))
+                  }
+                }} />
+                <div className="mt-4">
+                  <button
+                    onClick={() => setActiveView('groups')}
+                    className="px-4 py-2 text-sm text-gray-600 hover:text-blue-600 font-semibold transition-colors"
+                  >
+                    ← Volver a Tus Grupos
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>

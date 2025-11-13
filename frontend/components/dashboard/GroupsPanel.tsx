@@ -11,12 +11,23 @@ type Props = {
   groups: Group[]
   loading: boolean
   summary: GlobalSummary | null
+  onCreateGroup?: () => void
 }
 
-export default function GroupsPanel({ groups, loading, summary }: Props) {
+export default function GroupsPanel({ groups, loading, summary, onCreateGroup }: Props) {
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-      <h2 className="text-2xl font-bold text-blue-700 mb-6">Tus grupos</h2>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-blue-700">Tus grupos</h2>
+        {onCreateGroup && (
+          <button
+            onClick={onCreateGroup}
+            className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors shadow-md"
+          >
+            ➕ Crear Grupo
+          </button>
+        )}
+      </div>
       {loading ? (
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 mx-auto"></div>

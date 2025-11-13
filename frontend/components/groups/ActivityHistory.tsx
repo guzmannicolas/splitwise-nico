@@ -1,4 +1,4 @@
-import React from 'react'
+import { useState } from 'react'
 import type { Expense, Settlement } from '../../lib/services/types'
 
 type ActivityItem = 
@@ -12,6 +12,8 @@ type Props = {
 }
 
 export default function ActivityHistory({ expenses, settlements, displayNameFor }: Props) {
+  const [isExpanded, setIsExpanded] = useState(true)
+
   // Combinar gastos y liquidaciones en timeline
   const activities: ActivityItem[] = [
     ...expenses.map(e => ({ type: 'expense' as const, data: e, timestamp: e.created_at })),
@@ -20,7 +22,15 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-      <h2 className="text-2xl font-bold text-blue-700 mb-4">Actividad Reciente</h2>
+      <h2 
+        className="text-2xl font-bold text-blue-700 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span>Actividad Reciente</span>
+        <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+      </h2>
+  {isExpanded && (
+  <>
       
       {activities.length === 0 ? (
         <p className="text-gray-400 text-center py-8">No hay actividad aún</p>
@@ -63,6 +73,8 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
             </li>
           ))}
         </ul>
+      )}
+      </>
       )}
     </div>
   )

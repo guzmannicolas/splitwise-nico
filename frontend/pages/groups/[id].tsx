@@ -112,6 +112,26 @@ export default function GroupDetail() {
     }
   }
 
+  // Agregar invitado (guest user)
+  const handleAddGuest = async (fullName: string) => {
+    if (!currentUser || !groupId) return
+    
+    try {
+      const { data, error } = await supabase.rpc('add_guest_to_group', {
+        p_group_id: groupId,
+        p_full_name: fullName
+      })
+
+      if (error) throw error
+
+      alert(`Invitado "${fullName}" agregado correctamente`)
+      refresh()
+    } catch (err: any) {
+      console.error('Error agregando invitado:', err)
+      alert('Error al agregar invitado: ' + (err?.message || String(err)))
+    }
+  }
+
   // Salir del grupo
   const leaveGroup = async () => {
     if (!currentUser || !groupId) return
@@ -226,6 +246,7 @@ export default function GroupDetail() {
               members={members}
               currentUserId={currentUser?.id || null}
               onInvite={handleInvite}
+              onAddGuest={handleAddGuest}
               inviting={inviting}
             />
             <BalanceCard 

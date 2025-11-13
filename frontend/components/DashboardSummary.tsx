@@ -1,4 +1,5 @@
 import React from 'react'
+import { useRouter } from 'next/router'
 import type { GlobalSummary } from '../lib/services/SummaryService'
 
 type Props = {
@@ -7,6 +8,7 @@ type Props = {
 }
 
 export default function DashboardSummary({ summary, loading }: Props) {
+  const router = useRouter()
   return (
     <div className="bg-gradient-to-br from-white to-blue-50 shadow-xl rounded-2xl p-6 border border-blue-100">
       <h2 className="text-2xl font-bold text-blue-700 mb-6">Resumen General</h2>
@@ -31,16 +33,31 @@ export default function DashboardSummary({ summary, loading }: Props) {
             </div>
           </div>
           {summary.byGroup.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold text-blue-600 mb-2">Por grupo</h3>
-              <ul className="divide-y divide-gray-200 bg-white rounded-xl border border-gray-100">
+            <div className="mt-8">
+              <h3 className="text-xl font-bold text-blue-700 mb-3">Por grupo</h3>
+              <ul className="grid grid-cols-1 gap-3">
                 {summary.byGroup.map(g => (
-                  <li key={g.group_id} className="flex items-center justify-between p-4">
-                    <div>
-                      <p className="font-medium text-gray-800">{g.group_name}</p>
-                      <p className="text-xs text-gray-500 mt-1">Te deben: ${g.owedToMe.toFixed(2)} · Debés: ${g.owedByMe.toFixed(2)}</p>
+                  <li key={g.group_id}>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => router.push(`/groups/${g.group_id}`)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/groups/${g.group_id}`) }}
+                      className="group flex items-center justify-between p-5 rounded-xl border transition-all duration-200 cursor-pointer
+                                 bg-white border-blue-100 hover:border-blue-300 hover:shadow-md"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="mt-1 text-blue-500">👥</div>
+                        <div>
+                          <p className="text-lg font-semibold text-gray-900 leading-none">{g.group_name}</p>
+                          <p className="text-sm text-gray-500 mt-1">Te deben: ${g.owedToMe.toFixed(2)} · Debés: ${g.owedByMe.toFixed(2)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-lg font-extrabold ${g.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>{g.net.toFixed(2)}</span>
+                        <span className="text-gray-400 group-hover:text-blue-500 transition-colors">➜</span>
+                      </div>
                     </div>
-                    <span className={`text-sm font-bold ${g.net >= 0 ? 'text-green-600' : 'text-red-600'}`}>{g.net.toFixed(2)}</span>
                   </li>
                 ))}
               </ul>

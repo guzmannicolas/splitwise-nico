@@ -23,6 +23,7 @@ export default function SettlementSection({
   displayNameFor
 }: Props) {
   const [showForm, setShowForm] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(true)
   const [fromUserId, setFromUserId] = useState('')
   const [toUserId, setToUserId] = useState('')
   const [amount, setAmount] = useState('')
@@ -61,7 +62,16 @@ export default function SettlementSection({
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
-      <h2 className="text-2xl font-bold text-blue-700 mb-4">Liquidaciones</h2>
+      <h2 
+        className="text-2xl font-bold text-blue-700 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <span>Liquidaciones</span>
+        <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+      </h2>
+
+      {isExpanded && (
+      <>
 
       {/* Sugerencias */}
       {suggestions.length > 0 && (
@@ -205,6 +215,8 @@ export default function SettlementSection({
           </ul>
         )}
       </div>
+      </>
+      )}
     </div>
   )
 }

@@ -11,23 +11,30 @@ interface BalanceCardProps {
  * Responsabilidad única: Visualización de balances
  */
 export default function BalanceCard({ balances, onShowDetails }: BalanceCardProps) {
+  const [isExpanded, setIsExpanded] = useState(true)
+
   if (balances.length === 0) {
     return null
   }
 
   return (
     <div className="bg-white shadow-xl rounded-2xl p-6 border border-purple-100">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-purple-700">Balances</h2>
-        {onShowDetails && (
+      <div className="flex justify-between items-center mb-4 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+        <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2 hover:text-purple-800 transition-colors">
+          <span>Balances</span>
+          <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
+        </h2>
+        {isExpanded && onShowDetails && (
           <button
-            onClick={onShowDetails}
+            onClick={(e) => { e.stopPropagation(); onShowDetails(); }}
             className="px-3 py-1 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors"
           >
             Ver detalles
           </button>
         )}
       </div>
+  {isExpanded && (
+  <>
       <div className="space-y-3">
         {balances.map(b => (
           <div
@@ -61,6 +68,8 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
           <strong>-</strong> = Debe dinero
         </p>
       </div>
+      </>
+      )}
     </div>
   )
 }
