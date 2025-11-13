@@ -263,6 +263,7 @@ export default function GroupDetail() {
               onCreate={createExpense}
               creating={creating}
               displayNameFor={displayNameFor}
+              currentUserId={currentUser?.id || ''}
             />
 
             {/* Lista de gastos */}
