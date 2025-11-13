@@ -52,7 +52,8 @@ create table if not exists public.settlements (
   to_user_id uuid not null references public.profiles(id) on delete cascade,
   amount numeric(12,2) not null check (amount > 0),
   created_at timestamptz default now(),
-  created_by uuid references auth.users(id)
+  created_by uuid references auth.users(id),
+  deleted_at timestamptz
 );
 
 -- ==============
@@ -282,7 +283,7 @@ with check (exists (
 alter table public.settlements enable row level security;
 create policy settlements_select on public.settlements
 for select to authenticated
-using (public.user_is_member_of_group(group_id, auth.uid()));
+using (public.user_is_member_of_group(group_id, auth.uid()) and deleted_at is null);
 
 create policy settlements_insert on public.settlements
 for insert to authenticated
@@ -291,9 +292,59 @@ with check (public.user_is_member_of_group(group_id, auth.uid()));
 create policy settlements_delete on public.settlements
 for delete to authenticated
 using (
-  public.user_is_member_of_group(group_id, auth.uid()) and
-  (created_by = auth.uid() or from_user_id = auth.uid() or to_user_id = auth.uid())
+  public.user_is_member_of_group(group_id, auth.uid())
 );
+
+create policy settlements_soft_delete on public.settlements
+for update to authenticated
+using (public.user_is_member_of_group(group_id, auth.uid()))
+with check (public.user_is_member_of_group(group_id, auth.uid()));
 
 -- Reload PostgREST schema cache
 notify pgrst, 'reload schema';
+
+-- =============================
+-- AUDIT TABLE FOR SETTLEMENTS
+-- =============================
+create table if not exists public.settlement_audit (
+  id bigserial primary key,
+  settlement_id uuid not null,
+  group_id uuid not null,
+  action text not null check (action in ('CREATE','SOFT_DELETE')),
+  from_user_id uuid,
+  to_user_id uuid,
+  amount numeric(12,2),
+  actor_user_id uuid,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_settlement_audit_settlement on public.settlement_audit(settlement_id);
+
+create or replace function public.audit_settlement_create()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.settlement_audit (settlement_id, group_id, action, from_user_id, to_user_id, amount, actor_user_id)
+  values (new.id, new.group_id, 'CREATE', new.from_user_id, new.to_user_id, new.amount, auth.uid());
+  return new;
+end;$$;
+
+create or replace function public.audit_settlement_soft_delete()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  -- Only log when deleted_at transitions from null to not null
+  if old.deleted_at is null and new.deleted_at is not null then
+    insert into public.settlement_audit (settlement_id, group_id, action, from_user_id, to_user_id, amount, actor_user_id)
+    values (old.id, old.group_id, 'SOFT_DELETE', old.from_user_id, old.to_user_id, old.amount, auth.uid());
+  end if;
+  return new;
+end;$$;
+
+drop trigger if exists trg_audit_settlement_create on public.settlements;
+create trigger trg_audit_settlement_create
+after insert on public.settlements
+for each row execute function public.audit_settlement_create();
+
+drop trigger if exists trg_audit_settlement_soft_delete on public.settlements;
+create trigger trg_audit_settlement_soft_delete
+after update on public.settlements
+for each row execute function public.audit_settlement_soft_delete();
