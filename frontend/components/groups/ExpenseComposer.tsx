@@ -54,14 +54,18 @@ export default function ExpenseComposer({
       )}
 
       {showForm && (
-        <ExpenseForm
-          members={members}
-          onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
-          creating={creating}
-          displayNameFor={displayNameFor}
-          currentUserId={currentUserId}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="max-w-2xl w-full">
+            <ExpenseForm
+              members={members}
+              onSubmit={handleSubmit}
+              onCancel={() => setShowForm(false)}
+              creating={creating}
+              displayNameFor={displayNameFor}
+              currentUserId={currentUserId}
+            />
+          </div>
+        </div>
       )}
     </>
   )

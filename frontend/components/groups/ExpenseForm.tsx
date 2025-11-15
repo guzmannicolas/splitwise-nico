@@ -182,7 +182,7 @@ export default function ExpenseForm({
           <button
             type="button"
             onClick={onCancel}
-            className="text-gray-500 hover:text-gray-700 text-2xl leading-none transition-colors"
+            className="text-gray-500 hover:text-gray-700 text-4xl leading-none transition-colors w-10 h-10 flex items-center justify-center"
             disabled={creating}
           >
             ×
