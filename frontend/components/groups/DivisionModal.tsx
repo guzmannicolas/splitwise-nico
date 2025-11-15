@@ -20,6 +20,7 @@ const divisionTypes = [
 
 export default function DivisionModal({ open, onClose, amount, members, selectedParticipants, onApply, displayNameFor }: DivisionModalProps) {
   const [type, setType] = useState<'equal' | 'percent' | 'custom' | 'each'>('equal');
+  const [localParticipants, setLocalParticipants] = useState<string[]>(selectedParticipants);
   const [splits, setSplits] = useState<Record<string, number>>(() => {
     const eq = amount / selectedParticipants.length;
     const obj: Record<string, number> = {};
@@ -33,27 +34,42 @@ export default function DivisionModal({ open, onClose, amount, members, selected
     return obj;
   });
 
-  // Actualiza splits cuando cambian participantes o tipo
+  // Actualiza splits cuando cambian participantes locales o tipo
   React.useEffect(() => {
+    const activeCount = localParticipants.length;
+    if (activeCount === 0) return;
+
     if (type === 'equal') {
-      const eq = amount / selectedParticipants.length;
+      const eq = amount / activeCount;
       const obj: Record<string, number> = {};
-      selectedParticipants.forEach(id => { obj[id] = eq; });
+      localParticipants.forEach(id => { obj[id] = eq; });
       setSplits(obj);
     }
     if (type === 'percent') {
-      const percent = 100 / selectedParticipants.length;
+      const percent = 100 / activeCount;
       const obj: Record<string, number> = {};
-      selectedParticipants.forEach(id => { obj[id] = percent; });
+      localParticipants.forEach(id => { obj[id] = percent; });
       setPercents(obj);
+      // Actualizar splits también
+      const splitsObj: Record<string, number> = {};
+      localParticipants.forEach(id => { splitsObj[id] = (amount * percent) / 100; });
+      setSplits(splitsObj);
     }
     if (type === 'each') {
-      const eq = amount / selectedParticipants.length;
+      const eq = amount / activeCount;
       const obj: Record<string, number> = {};
-      selectedParticipants.forEach(id => { obj[id] = eq; });
+      localParticipants.forEach(id => { obj[id] = eq; });
       setSplits(obj);
     }
-  }, [type, selectedParticipants, amount]);
+  }, [type, localParticipants, amount]);
+
+  const toggleParticipant = (userId: string) => {
+    setLocalParticipants(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
 
   if (!open) return null;
 
@@ -87,13 +103,22 @@ export default function DivisionModal({ open, onClose, amount, members, selected
               {selectedParticipants.map(id => {
                 const member = members.find(m => m.user_id === id);
                 if (!member) return null;
+                const isActive = localParticipants.includes(id);
                 return (
-                  <div key={id} className="flex items-center gap-3 mb-2 transition-all duration-200 bg-white hover:bg-teal-50 rounded-lg p-2">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
+                  <div key={id} className={`flex items-center gap-3 mb-2 transition-all duration-200 rounded-lg p-2 ${isActive ? 'bg-white hover:bg-teal-50' : 'bg-gray-50 opacity-50'}`}>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={() => toggleParticipant(id)}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-500 cursor-pointer"
+                    />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${isActive ? 'bg-teal-100 text-teal-700' : 'bg-gray-200 text-gray-500'}`}>
                       {displayNameFor(id)?.charAt(0) || '👤'}
                     </div>
-                    <span className="flex-1 text-gray-700">{displayNameFor(id)}</span>
-                    <span className="px-3 py-1 rounded bg-teal-50 text-teal-700 font-semibold">${splits[id].toFixed(2)}</span>
+                    <span className={`flex-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>{displayNameFor(id)}</span>
+                    <span className={`px-3 py-1 rounded font-semibold ${isActive ? 'bg-teal-50 text-teal-700' : 'bg-gray-100 text-gray-400'}`}>
+                      ${isActive && splits[id] ? splits[id].toFixed(2) : '0.00'}
+                    </span>
                   </div>
                 );
               })}
@@ -116,7 +141,7 @@ export default function DivisionModal({ open, onClose, amount, members, selected
                       type="number"
                       min={0}
                       max={100}
-                      value={percents[id]}
+                      value={percents[id] || 0}
                       onChange={e => {
                         const val = Math.max(0, Math.min(100, Number(e.target.value)));
                         setPercents(prev => ({ ...prev, [id]: val }));
@@ -129,6 +154,26 @@ export default function DivisionModal({ open, onClose, amount, members, selected
                   </div>
                 );
               })}
+              {/* Total de porcentajes */}
+              <div className="mt-4 pt-3 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-gray-700">TOTAL</span>
+                  <span className={`text-lg font-bold ${
+                    Object.values(percents).reduce((sum, val) => sum + (val || 0), 0) === 100 
+                      ? 'text-green-600' 
+                      : 'text-gray-700'
+                  }`}>
+                    {Object.values(percents).reduce((sum, val) => sum + (val || 0), 0).toFixed(2)}%
+                  </span>
+                </div>
+                {Object.values(percents).reduce((sum, val) => sum + (val || 0), 0) !== 100 && (
+                  <div className="text-xs text-gray-500 text-right mt-1">
+                    {(100 - Object.values(percents).reduce((sum, val) => sum + (val || 0), 0)).toFixed(2)}% {
+                      Object.values(percents).reduce((sum, val) => sum + (val || 0), 0) > 100 ? 'sobra' : 'queda'
+                    }
+                  </div>
+                )}
+              </div>
             </div>
           )}
           {/* Por monto */}
@@ -147,7 +192,7 @@ export default function DivisionModal({ open, onClose, amount, members, selected
                     <input
                       type="number"
                       min={0}
-                      value={splits[id]}
+                      value={splits[id] || 0}
                       onChange={e => {
                         const val = Math.max(0, Number(e.target.value));
                         setSplits(prev => ({ ...prev, [id]: val }));
@@ -176,7 +221,7 @@ export default function DivisionModal({ open, onClose, amount, members, selected
                     <input
                       type="number"
                       min={0}
-                      value={splits[id]}
+                      value={splits[id] || 0}
                       onChange={e => {
                         const val = Math.max(0, Number(e.target.value));
                         setSplits(prev => ({ ...prev, [id]: val }));
@@ -193,7 +238,13 @@ export default function DivisionModal({ open, onClose, amount, members, selected
         <div className="pt-6 flex gap-3 flex-col sm:flex-row">
           <button onClick={onClose} className="w-full sm:w-auto py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors">Cancelar</button>
           <button
-            onClick={() => onApply(splits, type)}
+            onClick={() => {
+              // Solo incluir participantes activos en el resultado
+              const activeSplits = Object.fromEntries(
+                Object.entries(splits).filter(([userId]) => localParticipants.includes(userId))
+              );
+              onApply(activeSplits, type);
+            }}
             className="w-full sm:w-auto py-3 bg-teal-500 text-white font-semibold rounded-lg hover:bg-teal-600 transition-colors"
           >
             Aplicar

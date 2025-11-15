@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ExpenseForm from './ExpenseForm'
 import type { Expense, ExpenseSplit, Member, SplitType } from '../../lib/services/types'
 
 interface ExpenseListProps {
@@ -33,12 +34,8 @@ export default function ExpenseList({
 }: ExpenseListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [isExpanded, setIsExpanded] = useState(true)
-  const [editingId, setEditingId] = useState<string>('')
-  const [editDesc, setEditDesc] = useState('')
-  const [editAmount, setEditAmount] = useState('')
-  const [editPaidBy, setEditPaidBy] = useState('')
-  const [editSplitType, setEditSplitType] = useState<SplitType>('equal')
-  const [editCustomSplits, setEditCustomSplits] = useState<Record<string, string>>({})
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -53,36 +50,27 @@ export default function ExpenseList({
   }
 
   const startEdit = (expense: Expense) => {
-    setEditingId(expense.id)
-    setEditDesc(expense.description)
-    setEditAmount(expense.amount.toString())
-    setEditPaidBy(expense.paid_by)
-    setEditSplitType('equal')
-    setEditCustomSplits({})
+    setEditingExpense(expense)
+    setIsEditing(true)
   }
 
   const cancelEdit = () => {
-    setEditingId('')
-    setEditDesc('')
-    setEditAmount('')
-    setEditPaidBy('')
-    setEditSplitType('equal')
-    setEditCustomSplits({})
+    setEditingExpense(null)
+    setIsEditing(false)
   }
 
-  const handleSaveEdit = async (expenseId: string, e: React.FormEvent) => {
-    e.preventDefault()
-    const amount = parseFloat(editAmount)
-    if (isNaN(amount) || amount <= 0) {
-      alert('Monto inválido')
-      return
-    }
-    if (!editPaidBy) {
-      alert('Selecciona quién pagó')
-      return
-    }
-
-    await onEdit(expenseId, editDesc, amount, editPaidBy, editSplitType, editCustomSplits)
+  const handleSaveEdit = async (
+    description: string,
+    amount: number,
+    paidBy: string,
+    splitType: SplitType,
+    customSplits?: Record<string, string>,
+    fullBeneficiaryId?: string,
+    createdAt?: string
+  ) => {
+    if (!editingExpense) return
+    // Por ahora ignoramos createdAt ya que la función onEdit del padre no lo maneja aún
+    await onEdit(editingExpense.id, description, amount, paidBy, splitType, customSplits)
     cancelEdit()
   }
 
@@ -170,120 +158,6 @@ export default function ExpenseList({
               </div>
             </div>
 
-            {/* Editor inline */}
-            {editingId === expense.id && (
-              <form
-                onSubmit={e => handleSaveEdit(expense.id, e)}
-                className="mt-3 space-y-3 bg-gray-50 rounded p-3"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <input
-                    type="text"
-                    value={editDesc}
-                    onChange={e => setEditDesc(e.target.value)}
-                    className="p-2 border rounded"
-                    placeholder="Descripción"
-                    required
-                  />
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={editAmount}
-                    onChange={e => setEditAmount(e.target.value)}
-                    className="p-2 border rounded"
-                    placeholder="Monto"
-                    required
-                  />
-                  <select
-                    value={editPaidBy}
-                    onChange={e => setEditPaidBy(e.target.value)}
-                    className="p-2 border rounded"
-                  >
-                    <option value="">¿Quién pagó?</option>
-                    {members.map(m => (
-                      <option key={m.user_id} value={m.user_id}>
-                        {displayNameFor(m.user_id)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <div className="flex gap-4 flex-wrap text-sm">
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name={`editSplitType-${expense.id}`}
-                        value="equal"
-                        checked={editSplitType === 'equal'}
-                        onChange={() => setEditSplitType('equal')}
-                      />
-                      Igualitario
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name={`editSplitType-${expense.id}`}
-                        value="full"
-                        checked={editSplitType === 'full'}
-                        onChange={() => setEditSplitType('full')}
-                      />
-                      Full al pagador
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name={`editSplitType-${expense.id}`}
-                        value="custom"
-                        checked={editSplitType === 'custom'}
-                        onChange={() => setEditSplitType('custom')}
-                      />
-                      Personalizado
-                    </label>
-                  </div>
-                  {editSplitType === 'custom' && (
-                    <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {members.map(m => (
-                        <div
-                          key={m.user_id}
-                          className="flex items-center justify-between gap-2"
-                        >
-                          <span className="text-sm">{displayNameFor(m.user_id)}</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editCustomSplits[m.user_id] ?? ''}
-                            onChange={e =>
-                              setEditCustomSplits(prev => ({
-                                ...prev,
-                                [m.user_id]: e.target.value
-                              }))
-                            }
-                            className="w-32 p-2 border rounded"
-                            placeholder="0.00"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                  >
-                    Guardar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={cancelEdit}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </form>
-            )}
-
             {/* Detalles expandidos */}
             {expanded.has(expense.id) && (
               <div className="mt-3 bg-gray-50 rounded p-3">
@@ -313,6 +187,29 @@ export default function ExpenseList({
           </div>
         ))}
       </div>
+      )}
+
+      {/* Modal de edición */}
+      {isEditing && editingExpense && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fadeIn">
+          <div className="max-w-2xl w-full">
+            <ExpenseForm
+              members={members}
+              onSubmit={handleSaveEdit}
+              onCancel={cancelEdit}
+              creating={false}
+              displayNameFor={displayNameFor}
+              currentUserId={currentUserId || ''}
+              initialData={{
+                description: editingExpense.description,
+                amount: editingExpense.amount.toString(),
+                paidBy: editingExpense.paid_by,
+                createdAt: editingExpense.created_at
+              }}
+              isEditMode={true}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import DivisionModal from './DivisionModal'
 import type { Member, SplitType } from '../../lib/services/types'
 
@@ -10,12 +10,20 @@ interface ExpenseFormProps {
     paidBy: string,
     splitType: SplitType,
     customSplits?: Record<string, string>,
-    fullBeneficiaryId?: string
+    fullBeneficiaryId?: string,
+    createdAt?: string
   ) => Promise<void>
   onCancel: () => void
   creating: boolean
   displayNameFor: (userId: string) => string
   currentUserId: string
+  initialData?: {
+    description: string
+    amount: string
+    paidBy: string
+    createdAt?: string
+  }
+  isEditMode?: boolean
 }
 
 type PayerMode = 'single' | 'multiple' | 'each-own'
@@ -30,14 +38,22 @@ export default function ExpenseForm({
   onCancel,
   creating,
   displayNameFor,
-  currentUserId
+  currentUserId,
+  initialData,
+  isEditMode = false
 }: ExpenseFormProps) {
-  const [description, setDescription] = useState('')
-  const [amount, setAmount] = useState('')
-  const [paidBy, setPaidBy] = useState(currentUserId)
+  const [description, setDescription] = useState(initialData?.description || '')
+  const [amount, setAmount] = useState(initialData?.amount || '')
+  const [paidBy, setPaidBy] = useState(initialData?.paidBy || currentUserId)
   const [splitType, setSplitType] = useState<SplitType>('equal')
   const [customSplits, setCustomSplits] = useState<Record<string, string>>({})
   const [fullBeneficiaryId, setFullBeneficiaryId] = useState('')
+  const [selectedDate, setSelectedDate] = useState<string>(
+    initialData?.createdAt 
+      ? new Date(initialData.createdAt).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0]
+  )
+  const [showDatePicker, setShowDatePicker] = useState(false)
   
   // Nuevos estados para el diseño mejorado
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>(
@@ -48,6 +64,33 @@ export default function ExpenseForm({
   const [multiplePayerAmounts, setMultiplePayerAmounts] = useState<Record<string, string>>({})
   const [showParticipantSelector, setShowParticipantSelector] = useState(false)
   const [showDivisionModal, setShowDivisionModal] = useState(false)
+  // Se eliminó comportamiento expandible por requerimiento
+  const participantSelectorRef = useRef<HTMLDivElement>(null)
+  const datePickerRef = useRef<HTMLDivElement>(null)
+
+  // Cerrar selector de participantes al hacer click afuera
+  useEffect(() => {
+    if (!showParticipantSelector) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (participantSelectorRef.current && !participantSelectorRef.current.contains(e.target as Node)) {
+        setShowParticipantSelector(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showParticipantSelector])
+
+  // Cerrar date picker al hacer click afuera
+  useEffect(() => {
+    if (!showDatePicker) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (datePickerRef.current && !datePickerRef.current.contains(e.target as Node)) {
+        setShowDatePicker(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showDatePicker])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -74,7 +117,10 @@ export default function ExpenseForm({
       }
     }
 
-    await onSubmit(description, amountNum, paidBy, splitType, customSplits, fullBeneficiaryId || undefined)
+    // Convertir la fecha seleccionada a ISO string con hora actual
+    const selectedDateTime = new Date(selectedDate + 'T' + new Date().toTimeString().split(' ')[0])
+
+    await onSubmit(description, amountNum, paidBy, splitType, customSplits, fullBeneficiaryId || undefined, selectedDateTime.toISOString())
 
     // Limpiar formulario
     setDescription('')
@@ -127,10 +173,12 @@ export default function ExpenseForm({
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="space-y-5 bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg max-w-lg mx-auto animate-slideUp">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b pb-4">
-          <h2 className="text-lg sm:text-xl font-bold text-gray-800">Añadir un gasto</h2>
+      <form onSubmit={handleSubmit} className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl shadow-lg max-w-lg mx-auto animate-slideUp space-y-6">
+        {/* Línea 1: Título */}
+        <div className="flex items-center justify-between border-b pb-3">
+          <h2 className="text-lg sm:text-xl font-bold text-blue-700">
+            {isEditMode ? 'Editar gasto' : 'Añadir un gasto'}
+          </h2>
           <button
             type="button"
             onClick={onCancel}
@@ -141,41 +189,38 @@ export default function ExpenseForm({
           </button>
         </div>
 
-        {/* Con tú y selector */}
-        <div className="space-y-2">
-          <label className="text-sm text-gray-600">Con tú y:</label>
+        {/* Línea 2: Participantes */}
+        <div className="space-y-2" ref={participantSelectorRef}>
+          <span className="text-sm font-medium text-gray-600">Con tú y</span>
           <div className="relative">
             <button
               type="button"
               onClick={() => setShowParticipantSelector(!showParticipantSelector)}
-              className="w-full flex items-center gap-2 p-3 border border-gray-300 rounded-lg hover:border-teal-500 transition-all duration-200 bg-white hover:shadow-md"
+              className="w-full flex items-center gap-2 p-3 border border-gray-300 rounded-lg hover:border-blue-500 transition-all duration-200 bg-white hover:shadow-md text-sm"
               disabled={creating}
             >
               <span className="text-xl">👥</span>
-              <span className="text-gray-700 flex-1 text-left text-sm sm:text-base">
-                {selectedParticipants.length === members.length 
-                  ? 'Todos los de ' + (members[0] ? 'Testeo' : 'grupo')
-                  : `${selectedParticipants.length} persona${selectedParticipants.length !== 1 ? 's' : ''}`
-                }
+              <span className="text-gray-700 flex-1 text-left">
+                {selectedParticipants.length === members.length
+                  ? 'Todos'
+                  : `${selectedParticipants.length} persona${selectedParticipants.length !== 1 ? 's' : ''}`}
               </span>
               <span className="text-gray-400">×</span>
             </button>
-
-            {/* Dropdown de participantes */}
             {showParticipantSelector && (
               <div className="absolute z-10 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto animate-slideUp">
                 {members.map(member => (
                   <label
                     key={member.user_id}
-                    className="flex items-center gap-3 p-3 hover:bg-teal-50 cursor-pointer transition-colors duration-150"
+                    className="flex items-center gap-3 p-3 hover:bg-blue-50 cursor-pointer transition-colors duration-150 text-sm"
                   >
                     <input
                       type="checkbox"
                       checked={selectedParticipants.includes(member.user_id)}
                       onChange={() => toggleParticipant(member.user_id)}
-                      className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <span className="text-gray-700 text-sm sm:text-base">{displayNameFor(member.user_id)}</span>
+                    <span className="text-gray-700">{displayNameFor(member.user_id)}</span>
                   </label>
                 ))}
               </div>
@@ -183,106 +228,105 @@ export default function ExpenseForm({
           </div>
         </div>
 
-        {/* Descripción y Monto */}
-        <div className="space-y-4">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div className="bg-gradient-to-br from-gray-100 to-gray-200 p-3 rounded-lg shadow-sm">
-              <svg className="w-6 h-6 sm:w-8 sm:h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div className="flex-1">
-              <input
-                type="text"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                className="w-full text-gray-500 text-sm sm:text-base border-0 border-b border-gray-200 focus:border-teal-500 focus:outline-none py-2 transition-colors"
-                placeholder="Introduce una descripción"
-                required
-                disabled={creating}
-              />
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl text-gray-700">$</span>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  className="text-3xl sm:text-4xl font-light text-gray-700 border-0 focus:outline-none w-full transition-all"
-                  placeholder="0.00"
-                  required
-                  disabled={creating}
-                />
-              </div>
-            </div>
+        {/* Línea 3: Descripción */}
+        <div>
+          <span className="text-sm font-medium text-gray-600">Descripción</span>
+          <input
+            type="text"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            className="mt-2 w-full text-gray-700 text-sm sm:text-base border-0 border-b border-gray-200 focus:border-blue-500 focus:outline-none py-2 transition-colors"
+            placeholder="Introduce una descripción"
+            required
+            disabled={creating}
+          />
+        </div>
+
+        {/* Línea 4: Monto */}
+        <div>
+          <span className="text-sm font-medium text-gray-600">Monto</span>
+          <div className="mt-2 flex items-baseline gap-2">
+            <span className="text-xl sm:text-2xl text-gray-700">$</span>
+            <input
+              type="number"
+              step="0.01"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              className="text-3xl sm:text-4xl font-light text-gray-700 border-0 focus:outline-none w-full transition-all"
+              placeholder="0.00"
+              required
+              disabled={creating}
+            />
           </div>
         </div>
 
-        {/* Pagado por */}
+        {/* Línea 5: Pagado por */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-600">Pagado por</span>
+          <button
+            type="button"
+            onClick={() => setShowPayerModal(true)}
+            className="inline-flex items-center justify-center gap-2 w-56 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium shadow-sm hover:shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+            disabled={creating}
+          >
+            <span className="text-lg">👤</span>
+            <span>{getPayerDisplayText()}</span>
+          </button>
+        </div>
+
+        {/* Línea 6: División */}
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">Pagado por</span>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-600">Dividido</span>
             <button
               type="button"
-              onClick={() => setShowPayerModal(true)}
-              className="flex items-center gap-2 text-teal-600 hover:text-teal-700 font-medium"
-              disabled={creating}
-            >
-              <span className="text-lg">👤</span>
-              <span>{getPayerDisplayText()}</span>
-            </button>
-          </div>
-          <div className="text-xs sm:text-sm text-gray-500 flex flex-wrap items-center gap-2 mt-2">
-            <span>y dividido</span>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-teal-100 to-teal-200 text-teal-700 font-semibold shadow-sm hover:shadow-md hover:from-teal-200 hover:to-teal-300 transition-all duration-200 transform hover:scale-105"
+              className="inline-flex items-center justify-center gap-2 w-56 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium shadow-sm hover:shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
               onClick={() => setShowDivisionModal(true)}
               disabled={creating}
             >
-              <span className="text-base sm:text-lg">⚡</span>
-              <span className="text-xs sm:text-sm">
+              <span className="text-base">⚡</span>
+              <span className="text-sm">
                 {splitType === 'equal' ? 'a partes iguales' : splitType === 'custom' ? 'por monto' : splitType === 'percent' ? 'por porcentaje' : 'cada uno paga su parte'}
               </span>
             </button>
-            <span>.</span>
-            {selectedParticipants.length > 0 && amount && splitType === 'equal' && (
-              <span className="text-xs text-teal-600 font-medium">
-                (${calculateEqualSplitAmount().toFixed(2)}/persona)
-              </span>
-            )}
           </div>
+          {selectedParticipants.length > 0 && amount && splitType === 'equal' && (
+            <div className="text-xs text-blue-600 font-medium">
+              (${calculateEqualSplitAmount().toFixed(2)}/persona)
+            </div>
+          )}
         </div>
 
-        {/* Fecha y opciones adicionales */}
-        <div className="flex flex-wrap gap-2 sm:gap-3">
-          <button
-            type="button"
-            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm hover:bg-gray-200 transition-all duration-200 hover:shadow-md"
-            disabled={creating}
-          >
-            📅 {new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}
-          </button>
-          <button
-            type="button"
-            className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gray-100 text-gray-600 rounded-full text-xs sm:text-sm hover:bg-gray-200 transition-all duration-200 hover:shadow-md"
-            disabled={creating}
-          >
-            🖼️ Imagen/notas
-          </button>
+        {/* Línea 7: Fecha */}
+        <div className="relative" ref={datePickerRef}>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-600">Fecha</span>
+            <button
+              type="button"
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="inline-flex items-center justify-center gap-2 w-56 h-12 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium shadow-sm hover:shadow-md hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
+              disabled={creating}
+            >
+              <span>📅 {new Date(selectedDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}</span>
+            </button>
+          </div>
+          {showDatePicker && (
+            <div className="absolute right-0 top-full mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-20 animate-slideUp">
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => {
+                  setSelectedDate(e.target.value)
+                  setShowDatePicker(false)
+                }}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              />
+            </div>
+          )}
         </div>
 
-        {/* Categoría */}
-        <button
-          type="button"
-          className="w-full px-4 py-3 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-600 rounded-lg text-sm hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200"
-          disabled={creating}
-        >
-          🏷️ Testeo
-        </button>
-
-        {/* Botones de acción */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        {/* Línea 8: Acciones */}
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <button
             type="button"
             onClick={onCancel}
@@ -294,7 +338,7 @@ export default function ExpenseForm({
           <button
             type="submit"
             disabled={creating}
-            className="w-full sm:w-auto flex-1 py-3 bg-gradient-to-r from-teal-500 to-teal-600 text-white font-semibold rounded-lg hover:from-teal-600 hover:to-teal-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full sm:w-auto flex-1 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
             {creating ? '⏳ Guardando...' : '✓ Guardar'}
           </button>
