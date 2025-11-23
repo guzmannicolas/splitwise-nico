@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Layout from '../components/Layout'
-import { usePushNotifications } from '../lib/hooks/usePushNotifications'
+import { usePushNotifications, isPushSupported } from '../lib/hooks/usePushNotifications'
 
 export default function Profile() {
   const router = useRouter()
@@ -15,6 +15,27 @@ export default function Profile() {
   useEffect(() => {
     loadProfile()
   }, [])
+
+  // After we have a user, check whether a push subscription already exists
+  useEffect(() => {
+    if (!userId) return
+    if (typeof window === 'undefined') return
+    if (!isPushSupported()) return
+
+    ;(async () => {
+      try {
+        const reg = await navigator.serviceWorker.getRegistration()
+        if (!reg) {
+          setPushEnabled(false)
+          return
+        }
+        const subscription = await reg.pushManager.getSubscription()
+        setPushEnabled(!!subscription)
+      } catch (err) {
+        console.error('Error checking push subscription', err)
+      }
+    })()
+  }, [userId])
 
   async function loadProfile() {
     try {
