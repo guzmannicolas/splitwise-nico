@@ -9,28 +9,38 @@ type Body = {
   ua?: string
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  // This file will still load, but requests will fail with a clear message
-  console.warn('Missing SUPABASE env vars for push subscribe endpoint')
+// Do not create the Supabase client at module import time — if env vars are missing
+// this can throw and cause Next to render an error page. Create it lazily inside
+// the handler and return a clear JSON error when required env vars are missing.
+let supabaseAdmin: ReturnType<typeof createClient> | null = null
+
+function getSupabaseAdmin() {
+  if (supabaseAdmin) return supabaseAdmin
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null
+  supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  return supabaseAdmin
 }
-
-const supabaseAdmin = createClient(SUPABASE_URL || '', SUPABASE_SERVICE_ROLE_KEY || '')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Handle CORS preflight
-  res.setHeader('Access-Control-Allow-Origin', '*')
+  const origin = req.headers.origin || '*'
+  res.setHeader('Access-Control-Allow-Origin', origin)
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // Allow credentials if the client sends them
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end()
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    // Return debugging info to help identify why a non-POST/OPTIONS request arrived.
+    // Remove or reduce verbosity after debugging is complete.
+    return res.status(405).json({ error: 'Method not allowed', method: req.method, headers: req.headers })
   }
 
   let body: Body
@@ -56,19 +66,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       created_at: new Date().toISOString(),
     }
 
-    const { data, error } = await supabaseAdmin
+    const supabaseClient = getSupabaseAdmin()
+    if (!supabaseClient) {
+      return res.status(500).json({ error: 'Missing SUPABASE env vars on server (SUPABASE_SERVICE_ROLE_KEY/NEXT_PUBLIC_SUPABASE_URL)' })
+    }
+
+    const { data, error } = await supabaseClient
       .from('push_subscriptions')
-      .upsert(payload, { onConflict: 'endpoint' })
+      .upsert(payload as any, { onConflict: 'endpoint' })
       .select()
 
     if (error) {
       console.error('Supabase upsert error', error)
-      return res.status(500).json({ error: 'Failed to save subscription' })
+      // Return error details to help debugging (temporary)
+      return res.status(500).json({ error: 'Failed to save subscription', details: error })
     }
 
     return res.status(200).json({ success: true, subscription: data?.[0] ?? null })
   } catch (err) {
     console.error('Subscribe handler error', err)
-    return res.status(500).json({ error: 'Internal error' })
+    return res.status(500).json({ error: 'Internal error', details: String(err) })
   }
 }

@@ -20,8 +20,23 @@ export const usePushNotifications = () => {
   const subscribe = useCallback(async () => {
     if (!isPushSupported()) throw new Error('Push not supported in this browser')
 
-    // Register service worker
-    const reg = await navigator.serviceWorker.register('/sw.js')
+    // Ensure the service worker file is reachable
+    try {
+      const swCheck = await fetch('/sw.js', { method: 'HEAD' })
+      if (!swCheck.ok) throw new Error('Service worker file not found (sw.js)')
+    } catch (err) {
+      throw new Error('Service worker not available: ' + (err as Error).message)
+    }
+
+    // Register service worker if not already registered, then wait until it's active
+    let reg = await navigator.serviceWorker.getRegistration()
+    if (!reg) {
+      await navigator.serviceWorker.register('/sw.js')
+      reg = await navigator.serviceWorker.ready
+    } else {
+      // ensure active
+      reg = await navigator.serviceWorker.ready
+    }
 
     // Request permission
     const permission = await Notification.requestPermission()
