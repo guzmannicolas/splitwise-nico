@@ -32,7 +32,7 @@ export default function AcceptInvite() {
 
         // Llamar a la función que acepta la invitación
         const { data, error: rpcError } = await supabase
-          .rpc('accept_invitation', { invitation_token: token })
+          .rpc('accept_invitation', { p_token: token })
 
         if (rpcError) {
           setError(rpcError.message)
