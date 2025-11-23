@@ -82,11 +82,18 @@ export const usePushNotifications = () => {
     if (subscription) {
       // Remove on server by endpoint
       const subJson = subscription.toJSON() as any
-      await fetch('/api/push/subscribe', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ endpoint: subJson.endpoint })
-      })
+      try {
+        // First notify server to remove the stored subscription
+        await fetch('/api/push/unsubscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ endpoint: subJson.endpoint })
+        })
+      } catch (err) {
+        console.error('Failed to notify server about unsubscribe', err)
+      }
+
+      // Then unsubscribe locally
       await subscription.unsubscribe()
     }
   }, [])
