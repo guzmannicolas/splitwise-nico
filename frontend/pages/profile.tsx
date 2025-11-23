@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Layout from '../components/Layout'
+import { usePushNotifications } from '../lib/hooks/usePushNotifications'
 
 export default function Profile() {
   const router = useRouter()
@@ -74,6 +75,38 @@ export default function Profile() {
     }
   }
 
+  const { subscribe, unsubscribe } = usePushNotifications()
+  const [pushLoading, setPushLoading] = useState(false)
+  const [pushEnabled, setPushEnabled] = useState(false)
+
+  const handleEnablePush = async () => {
+    try {
+      setPushLoading(true)
+      await subscribe()
+      setPushEnabled(true)
+      alert('Notificaciones activadas')
+    } catch (err: any) {
+      console.error('Error subscribe', err)
+      alert('No se pudo activar notificaciones: ' + (err?.message || String(err)))
+    } finally {
+      setPushLoading(false)
+    }
+  }
+
+  const handleDisablePush = async () => {
+    try {
+      setPushLoading(true)
+      await unsubscribe()
+      setPushEnabled(false)
+      alert('Notificaciones desactivadas')
+    } catch (err: any) {
+      console.error('Error unsubscribe', err)
+      alert('No se pudo desactivar notificaciones: ' + (err?.message || String(err)))
+    } finally {
+      setPushLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -122,6 +155,27 @@ export default function Profile() {
                 <span className="flex items-center justify-center"><svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Guardando...</span>
               ) : 'Guardar Cambios'}
             </button>
+            <div className="pt-2">
+              {pushEnabled ? (
+                <button
+                  type="button"
+                  onClick={handleDisablePush}
+                  disabled={pushLoading}
+                  className="w-full py-3 px-4 mt-2 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-all duration-200 disabled:opacity-60"
+                >
+                  {pushLoading ? 'Procesando...' : 'Desactivar notificaciones'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleEnablePush}
+                  disabled={pushLoading}
+                  className="w-full py-3 px-4 mt-2 bg-green-600 text-white font-bold rounded-lg shadow-md hover:from-green-700 transition-all duration-200 disabled:opacity-60"
+                >
+                  {pushLoading ? 'Procesando...' : 'Activar notificaciones'}
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </div>
