@@ -90,6 +90,24 @@ export class ExpenseService {
         return { success: false, error: 'Error al crear la división del gasto' }
       }
 
+      // Fire-and-forget: notify group members via server endpoint
+      try {
+        void fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            group_id: expense.group_id,
+            title: 'Nuevo gasto',
+            body: `${expense.description} — $${expense.amount}`,
+            url: `/groups/${expense.group_id}`
+          })
+        })
+      } catch (err) {
+        // don't block on notification failures
+        console.error('Failed to call push send endpoint', err)
+      }
+
       return { success: true }
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
@@ -150,6 +168,23 @@ export class ExpenseService {
 
       if (splitsError) {
         return { success: false, error: 'Error al actualizar la división del gasto' }
+      }
+
+      // Notify group members about the update (fire-and-forget)
+      try {
+        void fetch('/api/push/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            group_id: validation.data.group_id,
+            title: 'Gasto actualizado',
+            body: `${validation.data.description} — $${validation.data.amount}`,
+            url: `/groups/${validation.data.group_id}`
+          })
+        })
+      } catch (err) {
+        console.error('Failed to call push send endpoint', err)
       }
 
       return { success: true }
