@@ -1,6 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createClient } from '@supabase/supabase-js'
-import webpush from 'web-push'
+// `web-push` does not provide bundled TypeScript types in this project.
+// Use require and cast to `any` to avoid the implicit-`any` import error.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+// @ts-ignore
+const webpush: any = require('web-push')
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
