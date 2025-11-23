@@ -172,17 +172,29 @@ export class ExpenseService {
 
       // Notify group members about the update (fire-and-forget)
       try {
-        void fetch('/api/push/send', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            group_id: validation.data.group_id,
-            title: 'Gasto actualizado',
-            body: `${validation.data.description} — $${validation.data.amount}`,
-            url: `/groups/${validation.data.group_id}`
+        // Fetch the expense to retrieve the `group_id` and current fields
+        const { data: updatedExpense, error: fetchExpenseError } = await supabase
+          .from('expenses')
+          .select('group_id, description, amount')
+          .eq('id', expenseId)
+          .single()
+
+        if (fetchExpenseError || !updatedExpense) {
+          // If we can't fetch the expense, don't attempt to send push notifications
+          console.warn('Could not fetch updated expense for notifications', fetchExpenseError)
+        } else {
+          void fetch('/api/push/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              group_id: updatedExpense.group_id,
+              title: 'Gasto actualizado',
+              body: `${updatedExpense.description} — $${updatedExpense.amount}`,
+              url: `/groups/${updatedExpense.group_id}`
+            })
           })
-        })
+        }
       } catch (err) {
         console.error('Failed to call push send endpoint', err)
       }
