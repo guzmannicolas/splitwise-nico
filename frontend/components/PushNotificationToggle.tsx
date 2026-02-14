@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 export default function PushNotificationToggle() {
   const {

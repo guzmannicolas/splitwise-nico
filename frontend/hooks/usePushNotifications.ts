@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useUser } from '@/contexts/UserContext';
-import { supabase } from '@/lib/supabase';
+import { useAuthUser } from '../lib/hooks/useAuthUser';
+import { supabase } from '../lib/supabaseClient';
 
 interface UsePushNotificationsReturn {
   isSupported: boolean;
@@ -13,7 +13,7 @@ interface UsePushNotificationsReturn {
 }
 
 export function usePushNotifications(): UsePushNotificationsReturn {
-  const { user } = useUser();
+  const { user } = useAuthUser();
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -171,7 +171,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 }
 
 // Helper: Convierte VAPID key de base64 a Uint8Array
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
 
