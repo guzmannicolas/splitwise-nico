@@ -9,6 +9,7 @@ import DashboardSidebar from '../components/dashboard/DashboardSidebar'
 import RecentExpenses from '../components/dashboard/RecentExpenses'
 import GroupsPanel from '../components/dashboard/GroupsPanel'
 import CreateGroupForm from '../components/dashboard/CreateGroupForm'
+import PushNotificationToggle from '../components/PushNotificationToggle'
 
 interface Group {
   id: string
@@ -169,7 +170,10 @@ export default function Dashboard() {
           {/* Contenido derecho */}
           <div className="lg:col-span-3">
             {activeView === 'summary' && (
-              <DashboardSummary summary={summary || null} loading={authLoading || summaryLoading} />
+              <div className="space-y-6">
+                <DashboardSummary summary={summary || null} loading={authLoading || summaryLoading} />
+                <PushNotificationToggle />
+              </div>
             )}
 
             {activeView === 'expenses' && (

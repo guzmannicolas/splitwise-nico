@@ -1,0 +1,22 @@
+<svg width="192" height="192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo indigo -->
+  <rect width="192" height="192" fill="#4F46E5" rx="32"/>
+  
+  <!-- Ícono de billete/dinero (SVG simple) -->
+  <g transform="translate(36, 56)">
+    <!-- Billete -->
+    <rect x="0" y="20" width="120" height="60" rx="8" fill="#FFFFFF" opacity="0.95"/>
+    
+    <!-- Círculo central (símbolo $) -->
+    <circle cx="60" cy="50" r="20" fill="#4F46E5" opacity="0.3"/>
+    
+    <!-- Símbolo $ -->
+    <text x="60" y="62" font-family="Arial, sans-serif" font-size="36" font-weight="bold" fill="#FFFFFF" text-anchor="middle">$</text>
+    
+    <!-- Detalles decorativos -->
+    <circle cx="15" cy="35" r="6" fill="#4F46E5" opacity="0.2"/>
+    <circle cx="15" cy="65" r="6" fill="#4F46E5" opacity="0.2"/>
+    <circle cx="105" cy="35" r="6" fill="#4F46E5" opacity="0.2"/>
+    <circle cx="105" cy="65" r="6" fill="#4F46E5" opacity="0.2"/>
+  </g>
+</svg>
