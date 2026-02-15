@@ -1,7 +1,7 @@
 // Service Worker para PWA con Push Notifications
-// Version: 1.0.0
+// Version: 1.0.3
 
-const CACHE_NAME = 'splitwise-nico-v1';
+const CACHE_NAME = 'splitwise-nico-v5';
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -11,11 +11,13 @@ const urlsToCache = [
 
 // Install event - cachea assets principales
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...');
+  console.log('[SW] Installing service worker version 1.0.3...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Caching app shell');
       return cache.addAll(urlsToCache);
+    }).then(() => {
+      console.log('[SW] Installation complete');
     })
   );
   // Activa el SW inmediatamente
@@ -24,7 +26,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - limpia caches viejos
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...');
+  console.log('[SW] Activating service worker version 1.0.3...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -35,14 +37,22 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
+    }).then(() => {
+      console.log('[SW] Claiming clients...');
+      return self.clients.claim();
+    }).then(() => {
+      console.log('[SW] Activation complete, clients claimed');
     })
   );
-  // Toma control de todas las páginas inmediatamente
-  return self.clients.claim();
 });
 
 // Fetch event - estrategia Network First con fallback a cache
 self.addEventListener('fetch', (event) => {
+  // Solo cachear GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {

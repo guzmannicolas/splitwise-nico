@@ -79,8 +79,24 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         throw new Error('Permiso de notificaciones denegado');
       }
 
-      // 2. Esperar a que el SW esté listo
-      const registration = await navigator.serviceWorker.ready;
+      // 2. Esperar a que el SW esté listo y activo
+      let registration = await navigator.serviceWorker.ready;
+      
+      // Si el SW se está actualizando, esperar a que se active
+      if (registration.installing) {
+        await new Promise((resolve) => {
+          registration.installing!.addEventListener('statechange', (e: Event) => {
+            const target = e.target as ServiceWorker;
+            if (target.state === 'activated') {
+              resolve(null);
+            }
+          });
+        });
+        registration = await navigator.serviceWorker.ready;
+      }
+
+      // Pequeña espera adicional para asegurar que esté completamente listo
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // 3. Suscribirse al push manager
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -96,15 +112,20 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       // 4. Guardar suscripción en la base de datos
       const subscriptionJSON = subscription.toJSON();
 
+      // Primero intentar eliminar suscripción existente
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('user_id', user.id);
+
+      // Luego insertar la nueva
       const { error: dbError } = await supabase
         .from('push_subscriptions')
-        .upsert({
+        .insert({
           user_id: user.id,
           endpoint: subscriptionJSON.endpoint!,
           p256dh_key: subscriptionJSON.keys!.p256dh!,
           auth_key: subscriptionJSON.keys!.auth!,
-        }, {
-          onConflict: 'endpoint',
         });
 
       if (dbError) throw dbError;
