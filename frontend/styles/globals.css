@@ -1,6 +1,32 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 html, body, #__next {
   height: 100%;
 }
-body { background-color: #f8fafc }
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+  }
+
+  .dark {
+    --background: 222.2 47.4% 11.2%; /* Slate 950 roughly */
+    --foreground: 210 40% 98%;
+  }
+}
+
+body { 
+  @apply bg-slate-50 text-slate-900 transition-colors duration-300;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-50;
+}
+
+/* Smooth transitions for theme switching */
+* {
+  @apply transition-colors duration-200;
+}

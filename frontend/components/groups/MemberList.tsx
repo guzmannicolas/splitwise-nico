@@ -47,9 +47,9 @@ export default function MemberList({
   }
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 border border-indigo-100">
+    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-indigo-100 dark:border-slate-800 transition-colors">
       <h2 
-        className="text-2xl font-bold text-indigo-700 mb-4 cursor-pointer flex items-center justify-between hover:text-indigo-800 transition-colors"
+        className="text-2xl font-bold text-indigo-700 dark:text-indigo-400 mb-4 cursor-pointer flex items-center justify-between hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span>Miembros</span>
@@ -64,15 +64,15 @@ export default function MemberList({
           return (
             <li
               key={m.user_id}
-              className="flex items-center gap-2 p-2 bg-indigo-50 rounded"
+              className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-slate-800 rounded"
             >
               <span className="text-2xl">{isGuest ? '👥' : '👤'}</span>
-              <span className="font-semibold flex-1">
+              <span className="font-semibold flex-1 text-gray-900 dark:text-slate-100">
                 {m.profiles?.full_name || m.user_id.slice(0, 8)}
                 {m.user_id === currentUserId && ' (Tú)'}
               </span>
               {isGuest && (
-                <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded-full">
+                <span className="px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold rounded-full">
                   Invitado
                 </span>
               )}
@@ -87,7 +87,7 @@ export default function MemberList({
           type="text"
           value={guestName}
           onChange={e => setGuestName(e.target.value)}
-          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-amber-500"
+          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-amber-500 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
           placeholder="Nombre del invitado"
           disabled={addingGuest}
           required
@@ -107,7 +107,7 @@ export default function MemberList({
           type="email"
           value={inviteEmail}
           onChange={e => setInviteEmail(e.target.value)}
-          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
           placeholder="Email para invitar"
           disabled={inviting}
           required

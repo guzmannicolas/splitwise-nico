@@ -18,16 +18,16 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
   }
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 border border-purple-100">
+    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-purple-100 dark:border-slate-800 transition-colors">
       <div className="flex justify-between items-center mb-4 cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-        <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2 hover:text-purple-800 transition-colors">
+        <h2 className="text-2xl font-bold text-purple-700 dark:text-purple-400 flex items-center gap-2 hover:text-purple-800 transition-colors">
           <span>Balances</span>
           <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
         </h2>
         {isExpanded && onShowDetails && (
           <button
             onClick={(e) => { e.stopPropagation(); onShowDetails(); }}
-            className="px-3 py-1 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors"
+            className="px-3 py-1 bg-purple-600 text-white text-sm font-semibold rounded-lg hover:bg-purple-700 transition-colors shadow-md"
           >
             Ver detalles
           </button>
@@ -39,16 +39,16 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
         {balances.map(b => (
           <div
             key={b.user_id}
-            className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200"
+            className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-slate-800 dark:to-slate-800 rounded-lg border border-purple-200 dark:border-slate-700"
           >
-            <span className="font-semibold text-gray-800">{b.name}</span>
+            <span className="font-semibold text-gray-800 dark:text-slate-100">{b.name}</span>
             <span
               className={`text-lg font-bold ${
                 b.balance > 0.01
-                  ? 'text-green-600'
+                  ? 'text-green-600 dark:text-green-500'
                   : b.balance < -0.01
-                  ? 'text-red-600'
-                  : 'text-gray-500'
+                  ? 'text-red-600 dark:text-red-500'
+                  : 'text-gray-500 dark:text-slate-500'
               }`}
             >
               {b.balance > 0.01
@@ -60,7 +60,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
           </div>
         ))}
       </div>
-      <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
+      <div className="mt-4 p-3 bg-gray-50 dark:bg-slate-800 rounded text-sm text-gray-600 dark:text-slate-400 border border-gray-100 dark:border-slate-700">
         <p>
           <strong>+</strong> = Le deben dinero
         </p>

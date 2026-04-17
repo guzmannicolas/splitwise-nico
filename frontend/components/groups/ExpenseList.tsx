@@ -92,23 +92,23 @@ export default function ExpenseList({
 
   if (expenses.length === 0) {
     return (
-      <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
+      <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800 transition-colors">
         <h2 
-          className="text-2xl font-bold text-blue-700 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+          className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 dark:hover:text-indigo-300 transition-colors"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <span>Gastos</span>
           <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
         </h2>
-        {isExpanded && <p className="text-gray-500 text-center">No hay gastos todavía</p>}
+        {isExpanded && <p className="text-gray-500 dark:text-slate-400 text-center">No hay gastos todavía</p>}
       </div>
     )
   }
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
+    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800 transition-colors">
       <h2 
-        className="text-2xl font-bold text-blue-700 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+        className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 dark:hover:text-indigo-300 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-3">
@@ -127,26 +127,26 @@ export default function ExpenseList({
         {expenses.map(expense => (
           <div
             key={expense.id}
-            className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4"
+            className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 border border-blue-200 dark:border-slate-700 rounded-xl p-4 transition-all"
           >
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
               <div className="flex-1">
-                <p className="font-bold text-lg text-gray-800">{expense.description}</p>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="font-bold text-lg text-gray-800 dark:text-slate-100">{expense.description}</p>
+                <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
                   Pagado por{' '}
-                  <span className="font-semibold">
+                  <span className="font-semibold text-gray-900 dark:text-slate-200">
                     {expense.profiles?.full_name ||
                       (currentUserId && expense.paid_by === currentUserId
                         ? 'Tú'
                         : shortId(expense.paid_by))}
                   </span>
                 </p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                   Creado por {displayNameFor(expense.created_by || expense.paid_by)} el{' '}
                   {new Date(expense.created_at).toLocaleDateString()}
                 </p>
                 {expense.updated_at && expense.updated_by && (
-                  <p className="text-xs text-gray-400 italic mt-1">
+                  <p className="text-xs text-gray-400 dark:text-slate-600 italic mt-1">
                     Última modificación por {displayNameFor(expense.updated_by)} el{' '}
                     {new Date(expense.updated_at).toLocaleDateString()} a las{' '}
                     {new Date(expense.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -154,25 +154,25 @@ export default function ExpenseList({
                 )}
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-xl font-extrabold text-blue-700">
+                <p className="text-xl font-extrabold text-blue-700 dark:text-blue-400">
                   ${expense.amount.toFixed(2)}
                 </p>
                 <button
                   onClick={() => startEdit(expense)}
-                  className="text-sm px-3 py-1 bg-blue-200 hover:bg-blue-300 rounded-lg transition-colors"
+                  className="text-sm px-3 py-1 bg-blue-200 dark:bg-slate-700 hover:bg-blue-300 dark:hover:bg-slate-650 rounded-lg transition-colors"
                   title="Editar gasto"
                 >
                   ✏️
                 </button>
                 <button
                   onClick={() => toggleExpand(expense.id)}
-                  className="text-sm px-3 py-1 bg-indigo-200 text-indigo-800 hover:bg-indigo-300 rounded-lg transition-colors font-semibold"
+                  className="text-sm px-3 py-1 bg-indigo-200 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-300 dark:hover:bg-indigo-900/50 rounded-lg transition-colors font-semibold"
                 >
                   {expanded.has(expense.id) ? 'Ocultar' : 'Ver detalles'}
                 </button>
                 <button
                   onClick={() => onDelete(expense.id)}
-                  className="text-sm px-3 py-1 bg-red-200 hover:bg-red-300 rounded-lg transition-colors"
+                  className="text-sm px-3 py-1 bg-red-200 dark:bg-red-900/30 text-red-800 dark:text-red-400 hover:bg-red-300 dark:hover:bg-red-900/50 rounded-lg transition-colors"
                   title="Eliminar gasto"
                 >
                   🗑️
@@ -184,14 +184,14 @@ export default function ExpenseList({
             {editingId === expense.id && (
               <form
                 onSubmit={e => handleSaveEdit(expense.id, e)}
-                className="mt-3 space-y-3 bg-gray-50 rounded p-3"
+                className="mt-3 space-y-3 bg-gray-50 dark:bg-slate-900/50 rounded p-4 border border-blue-100 dark:border-slate-700"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <input
                     type="text"
                     value={editDesc}
                     onChange={e => setEditDesc(e.target.value)}
-                    className="p-2 border rounded"
+                    className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                     placeholder="Descripción"
                     required
                   />
@@ -200,14 +200,14 @@ export default function ExpenseList({
                     step="0.01"
                     value={editAmount}
                     onChange={e => setEditAmount(e.target.value)}
-                    className="p-2 border rounded"
+                    className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                     placeholder="Monto"
                     required
                   />
                   <select
                     value={editPaidBy}
                     onChange={e => setEditPaidBy(e.target.value)}
-                    className="p-2 border rounded"
+                    className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                   >
                     <option value="">¿Quién pagó?</option>
                     {members.map(m => (
@@ -218,7 +218,7 @@ export default function ExpenseList({
                   </select>
                 </div>
                 <div>
-                  <div className="flex gap-4 flex-wrap text-sm">
+                  <div className="flex gap-4 flex-wrap text-sm text-gray-700 dark:text-slate-300">
                     <label className="flex items-center gap-1">
                       <input
                         type="radio"
@@ -255,9 +255,9 @@ export default function ExpenseList({
                       {members.map(m => (
                         <div
                           key={m.user_id}
-                          className="flex items-center justify-between gap-2"
+                          className="flex items-center justify-between gap-2 border-b dark:border-slate-800 pb-1"
                         >
-                          <span className="text-sm">{displayNameFor(m.user_id)}</span>
+                          <span className="text-sm text-gray-700 dark:text-slate-200">{displayNameFor(m.user_id)}</span>
                           <input
                             type="number"
                             step="0.01"
@@ -268,7 +268,7 @@ export default function ExpenseList({
                                 [m.user_id]: e.target.value
                               }))
                             }
-                            className="w-32 p-2 border rounded"
+                            className="w-32 p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                             placeholder="0.00"
                           />
                         </div>
@@ -276,17 +276,17 @@ export default function ExpenseList({
                     </div>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pt-2">
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold transition-all shadow-md"
                   >
                     Guardar
                   </button>
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                    className="flex-1 px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-100 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
                   >
                     Cancelar
                   </button>
@@ -296,9 +296,11 @@ export default function ExpenseList({
 
             {/* Detalles expandidos */}
             {expanded.has(expense.id) && (
-              <div className="mt-3 bg-gray-50 rounded p-3">
-                <p className="text-sm text-gray-600 mb-2">División de este gasto</p>
-                <ul className="space-y-1">
+              <div className="mt-3 bg-white/50 dark:bg-slate-900/30 rounded-xl p-4 border border-blue-100 dark:border-slate-700 transition-all">
+                <p className="text-sm font-bold text-gray-700 dark:text-slate-200 mb-3 flex items-center gap-2">
+                   <span>📊</span> División de este gasto
+                </p>
+                <ul className="space-y-2">
                   {members.map(m => {
                     const split = splits.find(
                       s => s.expense_id === expense.id && s.user_id === m.user_id
@@ -308,11 +310,11 @@ export default function ExpenseList({
                     return (
                       <li
                         key={m.user_id}
-                        className="flex items-center justify-between text-sm"
+                        className="flex items-center justify-between text-sm py-1 border-b border-blue-50 dark:border-slate-800 last:border-0"
                       >
-                        <span>{name}</span>
-                        <span className={amount > 0 ? 'text-red-600' : 'text-gray-500'}>
-                          {amount > 0 ? `debe $${amount.toFixed(2)}` : '(no debe)'}
+                        <span className="text-gray-700 dark:text-slate-300">{name}</span>
+                        <span className={`font-semibold ${amount > 0.01 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-slate-500'}`}>
+                          {amount > 0.01 ? `debe $${amount.toFixed(2)}` : '(no debe)'}
                         </span>
                       </li>
                     )

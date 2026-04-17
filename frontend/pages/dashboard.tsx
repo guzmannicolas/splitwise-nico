@@ -10,6 +10,8 @@ import RecentExpenses from '../components/dashboard/RecentExpenses'
 import GroupsPanel from '../components/dashboard/GroupsPanel'
 import CreateGroupForm from '../components/dashboard/CreateGroupForm'
 import PushNotificationToggle from '../components/PushNotificationToggle'
+import { GetServerSideProps } from 'next'
+import { requireAuth } from '../lib/authGuard'
 
 interface Group {
   id: string
@@ -45,17 +47,46 @@ interface Settlement {
 
 type ViewType = 'summary' | 'expenses' | 'groups' | 'create'
 
-export default function Dashboard() {
+interface DashboardProps {
+  user: { id: string; email: string | null }
+  initialGroups: Group[]
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const result = await requireAuth(context)
+  
+  if ('redirect' in result) return result
+
+  // Narrowing de tipos para TypeScript
+  if (!('user' in result)) return { notFound: true }
+
+  const { user, supabase } = result
+
+  // Pre-fetch de grupos en el servidor
+  const { data: groups } = await supabase
+    .from('groups')
+    .select('*')
+    .order('created_at', { ascending: false })
+
+  return {
+    props: {
+      user,
+      initialGroups: groups || [],
+    },
+  }
+}
+
+export default function Dashboard({ user: serverUser, initialGroups }: DashboardProps) {
   // Auth user centralizado
   const { user: authUser, loading: authLoading } = useAuthUser()
   const router = useRouter()
 
   // Estado UI y datos
   const [activeView, setActiveView] = useState<ViewType>('summary')
-  const [groups, setGroups] = useState<Group[]>([])
+  const [groups, setGroups] = useState<Group[]>(initialGroups)
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDesc, setNewGroupDesc] = useState('')
-  const [loadingGroups, setLoadingGroups] = useState(true)
+  const [loadingGroups, setLoadingGroups] = useState(false)
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([])
 
   // Summary hook (usa SummaryService)
@@ -148,7 +179,7 @@ export default function Dashboard() {
   }
 
   return (
-    <Layout>
+    <Layout serverUser={serverUser}>
       <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">

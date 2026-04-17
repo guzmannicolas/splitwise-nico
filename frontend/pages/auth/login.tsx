@@ -4,6 +4,15 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
 
+import { redirectIfAuthed } from '../../lib/authGuard'
+import { GetServerSideProps } from 'next'
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const result = await redirectIfAuthed(context)
+  if (result) return result
+  return { props: {} }
+}
+
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,19 +29,19 @@ export default function Login() {
 
   return (
     <Layout hideAuthLinks>
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-200 px-2">
-      <form onSubmit={handleLogin} className="w-full max-w-md p-8 bg-white/90 rounded-2xl shadow-2xl border border-blue-100 backdrop-blur-md">
-        <h2 className="text-3xl font-extrabold text-blue-700 mb-6 text-center">Iniciar Sesión</h2>
-        {error && <p className="text-red-600 bg-red-50 p-3 rounded-lg mb-4 text-sm">{error}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-200 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-2 transition-colors duration-500">
+      <form onSubmit={handleLogin} className="w-full max-w-md p-8 bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md transition-all">
+        <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Iniciar Sesión</h2>
+        {error && <p className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-3 rounded-lg mb-4 text-sm border border-red-100 dark:border-red-900/20">{error}</p>}
         <input 
-          className="w-full mb-4 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" 
+          className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
           placeholder="Email" 
           value={email} 
           onChange={e => setEmail(e.target.value)} 
         />
         <div className="relative mb-4">
           <input 
-            className="w-full p-3 pr-12 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300" 
+            className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
             type={showPassword ? "text" : "password"} 
             placeholder="Contraseña" 
             value={password} 
@@ -41,7 +50,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none"
             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
           >
             {showPassword ? (
@@ -63,11 +72,11 @@ export default function Login() {
           Iniciar Sesión
         </button>
         <div className="mt-6 text-center space-y-2">
-          <Link href="/auth/forgot-password" className="block text-sm text-blue-600 hover:text-blue-800 font-semibold">
+          <Link href="/auth/forgot-password" className="block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold">
             ¿Olvidaste tu contraseña?
           </Link>
-          <Link href="/auth/register" className="block text-sm text-gray-600 hover:text-gray-800">
-            ¿No tienes cuenta? <span className="font-semibold text-blue-600">Regístrate</span>
+          <Link href="/auth/register" className="block text-sm text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200">
+            ¿No tienes cuenta? <span className="font-semibold text-blue-600 dark:text-blue-400">Regístrate</span>
           </Link>
         </div>
       </form>

@@ -63,9 +63,9 @@ export default function SettlementSection({
     .filter(s => s !== null)
 
   return (
-    <div className="bg-white shadow-xl rounded-2xl p-6 border border-blue-100">
+    <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800 transition-colors">
       <h2 
-        className="text-2xl font-bold text-blue-700 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
+        className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 dark:hover:text-indigo-300 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-3">
@@ -84,10 +84,10 @@ export default function SettlementSection({
 
       {/* Sugerencias */}
       {suggestions.length > 0 && (
-        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm font-semibold text-yellow-800 mb-2">💡 Sugerencias para saldar:</p>
+        <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-lg">
+          <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-400 mb-2">💡 Sugerencias para saldar:</p>
           {suggestions.slice(0, 2).map((sug, idx) => (
-            <p key={idx} className="text-sm text-yellow-700">
+            <p key={idx} className="text-sm text-yellow-700 dark:text-yellow-300">
               {displayNameFor(sug!.from)} debería pagar ${sug!.amount.toFixed(2)} a {displayNameFor(sug!.to)}
             </p>
           ))}
@@ -106,15 +106,15 @@ export default function SettlementSection({
 
       {/* Formulario */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-purple-50 rounded-xl border border-purple-200">
-          <h3 className="font-semibold text-purple-800 mb-3">Registrar pago realizado</h3>
+        <form onSubmit={handleSubmit} className="mb-6 p-4 bg-purple-50 dark:bg-slate-800 rounded-xl border border-purple-200 dark:border-slate-700 transition-all duration-300">
+          <h3 className="font-semibold text-purple-800 dark:text-purple-400 mb-3">Registrar pago realizado</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quién pagó:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Quién pagó:</label>
               <select
                 value={fromUserId}
                 onChange={e => setFromUserId(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300"
+                className="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-300 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                 required
               >
                 <option value="">Seleccionar miembro</option>
@@ -126,11 +126,11 @@ export default function SettlementSection({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Le pagó a:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Le pagó a:</label>
               <select
                 value={toUserId}
                 onChange={e => setToUserId(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300"
+                className="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-300 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                 required
               >
                 <option value="">Seleccionar miembro</option>
@@ -144,14 +144,14 @@ export default function SettlementSection({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Monto:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Monto:</label>
               <input
                 type="number"
                 step="0.01"
                 min="0.01"
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-300"
+                className="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-300 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                 placeholder="0.00"
                 required
               />
@@ -160,7 +160,7 @@ export default function SettlementSection({
               <button
                 type="submit"
                 disabled={creating}
-                className="flex-1 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                className="flex-1 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all shadow-md"
               >
                 {creating ? 'Guardando...' : 'Registrar'}
               </button>
@@ -172,7 +172,7 @@ export default function SettlementSection({
                   setToUserId('')
                   setAmount('')
                 }}
-                className="flex-1 py-2 bg-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-400 transition-colors"
+                className="flex-1 py-2 bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-400 dark:hover:bg-slate-600 transition-colors"
               >
                 Cancelar
               </button>
@@ -182,29 +182,29 @@ export default function SettlementSection({
       )}
 
       {/* Lista de liquidaciones recientes */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-3">Historial de pagos</h3>
+      <div className="mt-2">
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-3">Historial de pagos</h3>
         {settlements.length === 0 ? (
-          <p className="text-gray-400 text-center py-4">No hay liquidaciones registradas</p>
+          <p className="text-gray-400 dark:text-slate-500 text-center py-4 italic">No hay liquidaciones registradas</p>
         ) : (
-          <ul className="divide-y divide-gray-200">
+          <ul className="divide-y divide-gray-200 dark:divide-slate-800">
             {settlements
               .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
               .slice(0, 10)
               .map(s => (
-                <li key={s.id} className="py-3 flex items-center justify-between hover:bg-gray-50 px-2 rounded">
+                <li key={s.id} className="py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/30 px-2 rounded transition-colors group">
                   <div className="flex-1">
-                    <p className="text-sm text-gray-800">
+                    <p className="text-sm text-gray-800 dark:text-slate-100">
                       <span className="font-medium">{displayNameFor(s.from_user_id)}</span>
-                      {' → '}
+                      <span className="mx-2 text-gray-400 dark:text-slate-600">→</span>
                       <span className="font-medium">{displayNameFor(s.to_user_id)}</span>
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                       {new Date(s.created_at).toLocaleString()}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="font-bold text-purple-600">${s.amount.toFixed(2)}</span>
+                  <div className="flex items-center gap-4">
+                    <span className="font-bold text-purple-600 dark:text-purple-400 text-lg">${s.amount.toFixed(2)}</span>
                     {currentUserId && (
                       <button
                         onClick={() => {
@@ -212,7 +212,7 @@ export default function SettlementSection({
                             onDeleteSettlement(s.id)
                           }
                         }}
-                        className="text-red-500 hover:text-red-700 text-sm font-semibold"
+                        className="text-red-400 hover:text-red-600 dark:text-red-500/50 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
                         title="Eliminar pago (soft delete)"
                       >
                         ✕

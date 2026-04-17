@@ -16,19 +16,84 @@ import ActivityHistory from '../../components/groups/ActivityHistory'
 import GroupHeader from '../../components/groups/GroupHeader'
 import BalanceDetailsModal from '../../components/groups/BalanceDetailsModal'
 import { useBalanceDetails } from '../../lib/hooks/useBalanceDetails'
+import { GetServerSideProps } from 'next'
+import { requireAuth } from '../../lib/authGuard'
 
 /**
  * Página de detalle de grupo - REFACTORIZADA CON SOLID
  * Responsabilidad: Coordinar componentes y manejar navegación
  * Reducida de 1191 líneas a ~250 líneas
  */
-export default function GroupDetail() {
+
+interface GroupProps {
+  user: { id: string; email: string | null }
+  initialGroup: any
+  initialMembers: any[]
+  initialExpenses: any[]
+  initialSplits: any[]
+  initialSettlements: any[]
+}
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const result = await requireAuth(context)
+  if ('redirect' in result) return result
+
+  if (!('user' in result)) return { notFound: true }
+  const { user, supabase } = result
+  const groupId = context.params?.id as string
+
+  // Pre-fetch paralelo de datos básicos
+  const [groupRes, membersRes, expensesRes, settlementsRes] = await Promise.all([
+    supabase.from('groups').select('*').eq('id', groupId).single(),
+    supabase.from('group_members').select('user_id, profiles(full_name, email)').eq('group_id', groupId),
+    supabase.from('expenses').select(`id, description, amount, paid_by, group_id, created_at, profiles:paid_by ( full_name )`).eq('group_id', groupId).order('created_at', { ascending: false }),
+    supabase.from('settlements').select('*').eq('group_id', groupId),
+  ])
+
+  if (groupRes.error) {
+    return { redirect: { destination: '/dashboard', permanent: false } }
+  }
+
+  // Fetch de splits (basado en los gastos obtenidos)
+  const expenseIds = expensesRes.data?.map(e => e.id) || []
+  let splits: any[] = []
+  if (expenseIds.length > 0) {
+    const { data } = await supabase.from('expense_splits').select('*').in('expense_id', expenseIds)
+    splits = data || []
+  }
+
+  return {
+    props: {
+      user,
+      initialGroup: groupRes.data,
+      initialMembers: membersRes.data || [],
+      initialExpenses: expensesRes.data || [],
+      initialSplits: splits,
+      initialSettlements: settlementsRes.data || [],
+    },
+  }
+}
+
+export default function GroupDetail({
+  user: serverUser,
+  initialGroup,
+  initialMembers,
+  initialExpenses,
+  initialSplits,
+  initialSettlements,
+}: GroupProps) {
   const router = useRouter()
   const { id } = router.query
   const groupId = typeof id === 'string' ? id : undefined
 
-  // Hook personalizado para datos del grupo
-  const { group, members, expenses, splits, settlements, balances, loading, isRefreshing, error, refresh } = useGroup(groupId)
+  // Hook personalizado para datos del grupo - Actualizado para aceptar datos iniciales
+  const { group, members, expenses, splits, settlements, balances, loading, isRefreshing, error, refresh } = useGroup(groupId, {
+    group: initialGroup,
+    members: initialMembers,
+    expenses: initialExpenses,
+    splits: initialSplits,
+    settlements: initialSettlements,
+  })
 
   // Usuario actual
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string | null } | null>(null)
@@ -228,7 +293,7 @@ export default function GroupDetail() {
   }
 
   return (
-    <Layout>
+    <Layout serverUser={serverUser}>
       <div className="max-w-6xl mx-auto p-4">
         {/* Header del grupo */}
         <GroupHeader

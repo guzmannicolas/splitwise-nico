@@ -9,18 +9,29 @@ import { supabase } from '../lib/supabaseClient'
 import { useRouter } from 'next/router'
 // Link: componente de Next.js para navegación del lado del cliente (no recarga página completa)
 import Link from 'next/link'
+// Hook personalizado para manejar el tema (oscuro/claro)
+import { useTheme } from '../hooks/useTheme'
 
 // Componente Layout: envuelve todas las páginas y provee navbar + estructura común
 // Props:
 //   - children: contenido de la página que se renderiza dentro del layout
 //   - hideAuthLinks (opcional): si es true, oculta los botones Login/Register cuando no hay sesión
-export default function Layout({ children, hideAuthLinks }: { children: React.ReactNode, hideAuthLinks?: boolean }) {
-  // Estado: almacena el objeto usuario de Supabase (null si no hay sesión)
-  const [user, setUser] = useState<any>(null)
+//   - serverUser (opcional): usuario pre-cargado desde el servidor (SSR)
+export default function Layout({ 
+  children, 
+  hideAuthLinks, 
+  serverUser 
+}: { 
+  children: React.ReactNode, 
+  hideAuthLinks?: boolean,
+  serverUser?: { id: string; email: string | null } | null
+}) {
+  // Estado: almacena el objeto usuario de Supabase (inicializado con el del servidor si existe)
+  const [user, setUser] = useState<any>(serverUser || null)
   // Router para navegación programática (ej: router.push('/'))
   const router = useRouter()
-  // Estado de carga: mientras verificamos la sesión, no renderizamos nada (evita flash de contenido incorrecto)
-  const [loading, setLoading] = useState(true)
+  // Estado de carga: si tenemos serverUser, ya no estamos cargando sesión
+  const [loading, setLoading] = useState(!serverUser)
   // Nombre a mostrar en el menú (cargado desde tabla profiles)
   const [displayName, setDisplayName] = useState<string>('')
   // Estado del dropdown: true = menú abierto, false = cerrado
@@ -30,6 +41,8 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
   // Estado para mostrar/ocultar navbar al hacer scroll
   const [showNavbar, setShowNavbar] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  // Hook de tema: permite cambiar entre light/dark
+  const { theme, toggleTheme, mounted } = useTheme()
 
   // useEffect que se ejecuta una sola vez al montar el componente ([] como dependencia)
   // Responsable de verificar si hay sesión activa y escuchar cambios de autenticación
@@ -132,24 +145,24 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
 
   // Mientras loading es true, no renderizamos el layout completo
   // Esto evita mostrar el navbar sin saber si hay usuario o no (previene flash de UI incorrecta)
-  if (loading) {
+  if (loading || !mounted) {
     // Devolver un spinner centrado mientras cargamos la sesión
-    return <div className="min-h-screen flex items-center">
+    return <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
       {/* Spinner animado con Tailwind (animate-spin + rounded-full + border) */}
-      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-600"></div>
     </div>
   }
 
   return (
     <>
     {/* Contenedor raíz: ocupa toda la pantalla y pinta el fondo en gradiente. */}
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500">
       {/* Marco de la app: agrega borde y separación de los costados (mx) y arriba/abajo (my).
           rounded-2xl redondea esquinas y overflow-hidden recorta el contenido (navbar incluido). */}
-      <div className="border border-blue-100 rounded-2xl overflow-hidden shadow">
+      <div className="min-h-screen border-blue-100 dark:border-slate-800 rounded-2xl overflow-hidden">
       {/* Navbar: barra superior dentro del marco. Se le quita shadow porque el marco ya tiene. 
           Transición suave para el efecto de show/hide al hacer scroll. */}
-      <nav className={`bg-white/80 backdrop-blur-md shadow-none border-b border-blue-100 fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+      <nav className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-none border-b border-blue-100 dark:border-slate-800 fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         showNavbar ? 'translate-y-0' : '-translate-y-full'
       }`}>
         {/* Contenedor centrado del navbar: limita el ancho y da padding horizontal. */}
@@ -158,7 +171,7 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
           <div className="flex">
             {/* Branding/Logo; permanece a la izquierda. */}
             <div className="flex items-center">
-              <Link href={user ? "/dashboard" : "/"} className="flex items-center px-2 text-blue-700 font-bold text-xl">
+              <Link href={user ? "/dashboard" : "/"} className="flex items-center px-2 text-blue-700 dark:text-blue-400 font-bold text-xl">
                 💸 Dividi2
               </Link>
             </div>
@@ -166,7 +179,20 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
                 Empujado a la derecha con ml-auto; mr-6/sm:mr-10 deja un colchón respecto al borde.
                 Si hideAuthLinks está activo y no hay usuario, no se muestran los enlaces de Login/Register. */}
             {(user || !hideAuthLinks) && (
-              <div className="flex items-center ml-auto">
+              <div className="flex items-center ml-auto gap-3">
+                {/* Botón de cambio de tema (Sol/Luna) */}
+                <button
+                  onClick={toggleTheme}
+                  className="p-2 rounded-full border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-amber-400 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
+                  aria-label="Cambiar tema"
+                >
+                  {theme === 'dark' ? (
+                    <span className="text-xl">☀️</span>
+                  ) : (
+                    <span className="text-xl">🌙</span>
+                  )}
+                </button>
+
                 {user ? (
                   <>
                     {/* Menú de usuario estilo Splitwise */}
@@ -174,31 +200,31 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
                     <div className="relative" ref={menuRef}>
                       <button
                         onClick={() => setMenuOpen(v => !v)}
-                        className="flex items-center gap-2 pl-1 pr-2 py-1.5 rounded-full border border-blue-200 bg-white hover:bg-blue-50 transition-colors"
+                        className="flex items-center gap-2 pl-1 pr-2 py-1.5 rounded-full border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors"
                         aria-haspopup="true"
                         aria-expanded={menuOpen}
                       >
                         <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-500 text-white font-bold">
                           {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
                         </span>
-                        <span className="text-sm font-semibold text-gray-800 max-w-[220px] truncate">{displayName || 'Tu cuenta'}</span>
-                        <svg className="h-4 w-4 text-gray-600" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                        <span className="text-sm font-semibold text-gray-800 dark:text-slate-100 max-w-[220px] truncate">{displayName || 'Tu cuenta'}</span>
+                        <svg className="h-4 w-4 text-gray-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                           <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
                         </svg>
                       </button>
                       {/* Dropdown del usuario: menú flotante alineado a la derecha del botón. */}
                       {menuOpen && (
-                        <div className="absolute right-0 mt-2 w-72 whitespace-nowrap rounded-xl bg-white drop-shadow-2xl ring-1 ring-black/5 border border-gray-200 z-50 overflow-hidden">
-                          <div className="py-1 divide-y divide-gray-100">
+                        <div className="absolute right-0 mt-2 w-72 whitespace-nowrap rounded-xl bg-white dark:bg-slate-800 drop-shadow-2xl ring-1 ring-black/5 border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
+                          <div className="py-1 divide-y divide-gray-100 dark:divide-slate-700">
                             <div className="py-1">
-                              <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 no-underline">Tu cuenta</Link>
-                              <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 no-underline">Crear un grupo</Link>
-                              <a href="#" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 no-underline" title="Próximamente">Calculadoras de divisiones justas</a>
-                              <a href="mailto:soporte@example.com" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 no-underline">Contactar con asistencia técnica</a>
+                              <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Tu cuenta</Link>
+                              <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Crear un grupo</Link>
+                              <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline" title="Próximamente">Calculadoras de divisiones justas</a>
+                              <a href="mailto:soporte@example.com" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Contactar con asistencia técnica</a>
                             </div>
                             <button
                               onClick={handleSignOut}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                              className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                             >
                               Cerrar sesión
                             </button>
@@ -211,7 +237,7 @@ export default function Layout({ children, hideAuthLinks }: { children: React.Re
                   <>
                     {!hideAuthLinks && (
                       <>
-                        <Link href="/auth/login" className="text-gray-700 hover:text-blue-700 hover:bg-blue-50 px-3 py-2 rounded-lg text-sm font-semibold transition-colors">
+                        <Link href="/auth/login" className="text-gray-700 dark:text-slate-200 hover:text-blue-700 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 px-3 py-2 rounded-lg text-sm font-semibold transition-colors">
                           Login
                         </Link>
                         <Link href="/auth/register" className="ml-2 bg-gradient-to-r from-blue-600 to-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-blue-700 hover:to-indigo-600 transition-all shadow-md">

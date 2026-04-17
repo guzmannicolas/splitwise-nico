@@ -1,6 +1,7 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
+import Script from 'next/script'
 import { useEffect } from 'react'
 
 export default function App({ Component, pageProps }: AppProps) {
@@ -47,6 +48,26 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:description" content="Gestiona gastos compartidos de forma simple y efectiva" />
         <meta property="og:site_name" content="Splitwise Nico" />
       </Head>
+
+      <Script
+        id="theme-init"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            (function() {
+              try {
+                const savedTheme = localStorage.getItem('theme');
+                const theme = savedTheme || 'dark';
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (e) {}
+            })()
+          `,
+        }}
+      />
       <Component {...pageProps} />
     </>
   )

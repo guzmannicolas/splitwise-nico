@@ -71,13 +71,13 @@ export default function ExpenseForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-xl border border-green-200">
+    <form onSubmit={handleSubmit} className="space-y-4 bg-gradient-to-br from-green-50 to-teal-50 dark:from-slate-800 dark:to-slate-800 p-6 rounded-xl border border-green-200 dark:border-slate-700 transition-all duration-300">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <input
           type="text"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
           placeholder="Descripción del gasto"
           required
           disabled={creating}
@@ -87,7 +87,7 @@ export default function ExpenseForm({
           step="0.01"
           value={amount}
           onChange={e => setAmount(e.target.value)}
-          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
           placeholder="Monto"
           required
           disabled={creating}
@@ -95,7 +95,7 @@ export default function ExpenseForm({
         <select
           value={paidBy}
           onChange={e => setPaidBy(e.target.value)}
-          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+          className="p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
           required
           disabled={creating}
         >
@@ -109,10 +109,10 @@ export default function ExpenseForm({
       </div>
 
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
           ¿Cómo dividir el gasto?
         </label>
-        <div className="flex gap-4 flex-wrap">
+        <div className="flex gap-4 flex-wrap text-gray-800 dark:text-slate-300">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
               type="radio"
@@ -138,12 +138,12 @@ export default function ExpenseForm({
             <span>El pagador es adeudado el total</span>
           </label>
       {splitType === 'full' && (
-        <div className="border rounded p-3 bg-yellow-50">
-          <p className="text-sm text-gray-600 mb-2">Selecciona quién debe reintegrar el 100% al pagador.</p>
+        <div className="border rounded p-3 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-900/30">
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">Selecciona quién debe reintegrar el 100% al pagador.</p>
           <select
             value={fullBeneficiaryId}
             onChange={e => setFullBeneficiaryId(e.target.value)}
-            className="w-full p-2 border rounded focus:ring-2 focus:ring-yellow-400"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-yellow-400 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
             disabled={creating || !paidBy}
             required
           >
@@ -174,14 +174,14 @@ export default function ExpenseForm({
       </div>
 
       {splitType === 'custom' && (
-        <div className="border rounded p-3 bg-gray-50">
-          <p className="text-sm text-gray-600 mb-2">
+        <div className="border rounded p-3 bg-gray-50 dark:bg-slate-700/50 border-gray-200 dark:border-slate-700">
+          <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">
             Ingresa los montos para cada persona (deben sumar el total)
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {members.map(m => (
               <div key={m.user_id} className="flex items-center justify-between gap-2">
-                <span className="text-sm">{displayNameFor(m.user_id)}</span>
+                <span className="text-sm text-gray-800 dark:text-slate-100">{displayNameFor(m.user_id)}</span>
                 <input
                   type="number"
                   step="0.01"
@@ -189,7 +189,7 @@ export default function ExpenseForm({
                   onChange={e =>
                     setCustomSplits(prev => ({ ...prev, [m.user_id]: e.target.value }))
                   }
-                  className="w-32 p-2 border rounded"
+                  className="w-32 p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                   placeholder="0.00"
                   disabled={creating}
                 />
@@ -203,7 +203,7 @@ export default function ExpenseForm({
         <button
           type="submit"
           disabled={creating}
-          className="flex-1 py-3 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg hover:from-green-700 hover:to-teal-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 py-3 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg hover:from-green-700 hover:to-teal-600 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {creating ? 'Creando...' : 'Crear Gasto'}
         </button>
@@ -211,7 +211,7 @@ export default function ExpenseForm({
           type="button"
           onClick={onCancel}
           disabled={creating}
-          className="flex-1 py-3 bg-gray-200 font-semibold rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+          className="flex-1 py-3 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-slate-100 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 shadow-sm"
         >
           Cancelar
         </button>

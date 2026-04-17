@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { GroupService } from '../services/GroupService'
 import { ExpenseService } from '../services/ExpenseService'
 import { SettlementService } from '../services/SettlementService'
@@ -9,20 +9,52 @@ import type { Group, Member, Expense, ExpenseSplit, Settlement, Balance } from '
  * Hook personalizado para manejar toda la lógica de un grupo
  * Responsabilidad: Estado y operaciones del grupo
  */
-export function useGroup(groupId: string | undefined) {
-  const [group, setGroup] = useState<Group | null>(null)
-  const [members, setMembers] = useState<Member[]>([])
-  const [expenses, setExpenses] = useState<Expense[]>([])
-  const [splits, setSplits] = useState<ExpenseSplit[]>([])
-  const [settlements, setSettlements] = useState<Settlement[]>([])
-  const [balances, setBalances] = useState<Balance[]>([])
-  const [loading, setLoading] = useState(true)
+export function useGroup(groupId: string | undefined, initialData?: {
+  group: Group | null;
+  members: Member[];
+  expenses: Expense[];
+  splits: ExpenseSplit[];
+  settlements: Settlement[];
+}) {
+  const [group, setGroup] = useState<Group | null>(initialData?.group || null)
+  const [members, setMembers] = useState<Member[]>(initialData?.members || [])
+  const [expenses, setExpenses] = useState<Expense[]>(initialData?.expenses || [])
+  const [splits, setSplits] = useState<ExpenseSplit[]>(initialData?.splits || [])
+  const [settlements, setSettlements] = useState<Settlement[]>(initialData?.settlements || [])
+  
+  // Balances REACTIVOS: se recalculan siempre que cambien los datos base
+  // Esto asegura que con los datos de SSR, el balance esté listo al instante
+  const balances = useMemo(() => {
+    const relevantSettlements = BalanceCalculator.filterRelevantSettlements(
+      expenses,
+      settlements
+    )
+    
+    return BalanceCalculator.calculateBalances(
+      members,
+      expenses,
+      splits,
+      relevantSettlements
+    )
+  }, [members, expenses, splits, settlements])
+
+  const [loading, setLoading] = useState(!initialData)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Ref para evitar doble fetch si ya tenemos datos de SSR
+  const hasLoadedInitial = useRef(!!initialData)
 
   // Cargar datos del grupo
   useEffect(() => {
     if (!groupId) return
+    
+    // Si ya cargamos datos por SSR, la primera vez saltamos el fetch automático
+    // pero marcamos que ya no es la carga inicial para futuros cambios de groupId
+    if (hasLoadedInitial.current) {
+      hasLoadedInitial.current = false
+      return
+    }
     
     fetchGroupData()
   }, [groupId])
@@ -64,20 +96,8 @@ export function useGroup(groupId: string | undefined) {
       const { data: settlementsData } = await SettlementService.getGroupSettlements(groupId)
       setSettlements(settlementsData || [])
 
-      // 6. Calcular balances
-      const relevantSettlements = BalanceCalculator.filterRelevantSettlements(
-        expensesData || [],
-        settlementsData || []
-      )
-      
-      const calculatedBalances = BalanceCalculator.calculateBalances(
-        membersData || [],
-        expensesData || [],
-        splitsData || [],
-        relevantSettlements
-      )
-      
-      setBalances(calculatedBalances)
+      // Nota: Ya no calculamos balances aquí porque useMemo se encarga automáticamente
+      // al actualizar los estados arriba.
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al cargar el grupo')
