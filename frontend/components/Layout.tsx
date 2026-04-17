@@ -8,11 +8,13 @@ import BottomNav from './BottomNav'
 export default function Layout({ 
   children, 
   hideAuthLinks, 
-  serverUser 
+  serverUser,
+  fluid = false
 }: { 
   children: React.ReactNode, 
   hideAuthLinks?: boolean,
-  serverUser?: { id: string; email: string | null } | null
+  serverUser?: { id: string; email: string | null } | null,
+  fluid?: boolean
 }) {
   const [user, setUser] = useState<any>(serverUser || null)
   const router = useRouter()
@@ -175,7 +177,7 @@ export default function Layout({
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 pt-20">
+      <main className={`${fluid ? '' : 'max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8'} pt-20`}>
         {children}
       </main>
 

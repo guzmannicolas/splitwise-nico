@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import type { Member, SplitType } from '../../lib/services/types'
+import { motion } from 'framer-motion'
 
 interface ExpenseFormProps {
   members: Member[]
@@ -16,10 +17,6 @@ interface ExpenseFormProps {
   displayNameFor: (userId: string) => string
 }
 
-/**
- * Componente para crear nuevos gastos
- * Responsabilidad única: Formulario de creación de gastos
- */
 export default function ExpenseForm({
   members,
   onSubmit,
@@ -49,199 +46,209 @@ export default function ExpenseForm({
     }
 
     if (splitType === 'full') {
-      if (!fullBeneficiaryId) {
-        alert('Selecciona quién debe el total al pagador')
-        return
-      }
-      if (fullBeneficiaryId === paidBy) {
-        alert('El beneficiario no puede ser el mismo que pagó')
+      if (!fullBeneficiaryId || fullBeneficiaryId === paidBy) {
+        alert('Revisa el beneficiario')
         return
       }
     }
 
     await onSubmit(description, amountNum, paidBy, splitType, customSplits, fullBeneficiaryId || undefined)
-
-    // Limpiar formulario
-    setDescription('')
-    setAmount('')
-    setPaidBy('')
-    setSplitType('equal')
-    setCustomSplits({})
-    setFullBeneficiaryId('')
+    // No hace falta llamar onCancel aquí si el padre lo hace en el submit
   }
 
   return (
-    <div className="fixed inset-0 z-[60] bg-white dark:bg-slate-900 md:static md:bg-transparent md:z-auto md:p-0 flex flex-col md:block overflow-y-auto md:overflow-visible transition-all duration-300">
-      {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-4 border-b dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10">
-        <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100 italic">Dividi2</h2>
-        <button 
-          onClick={onCancel}
-          className="p-2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
-          aria-label="Cerrar"
-        >
-          <span className="text-2xl">×</span>
-        </button>
-      </div>
+    <div className="fixed inset-0 z-[100] flex justify-end overflow-hidden">
+      {/* Backdrop */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" 
+        onClick={onCancel}
+      ></motion.div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-white dark:bg-slate-900 md:bg-gradient-to-br md:from-green-50 md:to-teal-50 md:dark:from-slate-800 md:dark:to-slate-800 p-6 md:rounded-xl md:border border-green-200 dark:border-slate-700 transition-all duration-300 flex-1">
-        <h2 className="text-2xl font-bold text-green-700 dark:text-green-400 mb-4 md:hidden">Agregar Gasto</h2>
+      {/* Side Panel / Mobile Fullscreen */}
+      <motion.div 
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+        className="relative w-full md:max-w-lg h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-green-100 dark:border-slate-800"
+      >
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase md:hidden">Descripción</label>
-            <input
-              type="text"
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
-              placeholder="¿En qué gastaste?"
-              required
-              disabled={creating}
-            />
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <span className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-lg">📝</span>
+              Nuevo Gasto
+            </h2>
           </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase md:hidden">Monto</label>
-            <input
-              type="number"
-              step="0.01"
-              value={amount}
-              onChange={e => setAmount(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
-              placeholder="0.00"
-              required
-              disabled={creating}
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase md:hidden">Pagado por</label>
-            <select
-              value={paidBy}
-              onChange={e => setPaidBy(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
-              required
-              disabled={creating}
-            >
-              <option value="">¿Quién pagó?</option>
-              {members.map(m => (
-                <option key={m.user_id} value={m.user_id}>
-                  {displayNameFor(m.user_id)}
-                </option>
-              ))}
-            </select>
-          </div>
+          <button 
+            onClick={onCancel}
+            className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 hover:text-gray-700 dark:hover:text-white transition-all hover:rotate-90"
+            aria-label="Cerrar"
+          >
+            <span className="text-2xl">×</span>
+          </button>
         </div>
 
-        <div className="pt-4">
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-200 mb-2">
-            ¿Cómo dividir el gasto?
-          </label>
-          <div className="flex flex-col gap-3 md:flex-row md:gap-4 flex-wrap text-gray-800 dark:text-slate-300">
-            <label className="flex items-center gap-2 cursor-pointer p-3 border dark:border-slate-700 rounded-lg md:border-none md:p-0">
+        {/* Scrollable Form */}
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Concepto</label>
               <input
-                type="radio"
-                name="splitType"
-                value="equal"
-                checked={splitType === 'equal'}
-                onChange={() => setSplitType('equal')}
-                className="mr-2 h-5 w-5 md:h-4 md:w-4"
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                className="w-full p-4 border rounded-2xl bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 transition-all font-medium"
+                placeholder="¿En qué se gastó el dinero?"
+                required
                 disabled={creating}
               />
-              <span>Igualitario</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer p-3 border dark:border-slate-700 rounded-lg md:border-none md:p-0">
-              <input
-                type="radio"
-                name="splitType"
-                value="full"
-                checked={splitType === 'full'}
-                onChange={() => setSplitType('full')}
-                className="mr-2 h-5 w-5 md:h-4 md:w-4"
-                disabled={creating}
-              />
-              <span>Liquidación Total</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer p-3 border dark:border-slate-700 rounded-lg md:border-none md:p-0">
-              <input
-                type="radio"
-                name="splitType"
-                value="custom"
-                checked={splitType === 'custom'}
-                onChange={() => setSplitType('custom')}
-                className="mr-2 h-5 w-5 md:h-4 md:w-4"
-                disabled={creating}
-              />
-              <span>Personalizado</span>
-            </label>
-          </div>
-        </div>
+            </div>
 
-        {splitType === 'full' && (
-          <div className="border rounded-xl p-4 bg-yellow-50 dark:bg-yellow-900/10 border-yellow-200 dark:border-yellow-900/30">
-            <p className="text-sm text-gray-600 dark:text-slate-400 mb-2">Selecciona quién debe reintegrar el 100% al pagador.</p>
-            <select
-              value={fullBeneficiaryId}
-              onChange={e => setFullBeneficiaryId(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-yellow-400 bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-900 dark:text-slate-100"
-              disabled={creating || !paidBy}
-              required
-            >
-              <option value="">Beneficiario</option>
-              {members
-                .filter(m => m.user_id !== paidBy)
-                .map(m => (
-                  <option key={m.user_id} value={m.user_id}>
-                    {displayNameFor(m.user_id)}
-                  </option>
-                ))}
-            </select>
-          </div>
-        )}
-
-        {splitType === 'custom' && (
-          <div className="border rounded-xl p-4 bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700">
-            <p className="text-sm text-gray-600 dark:text-slate-400 mb-3">
-              Ingresa los montos para cada persona
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {members.map(m => (
-                <div key={m.user_id} className="flex items-center justify-between gap-4 p-2 bg-white dark:bg-slate-800 rounded-lg border dark:border-slate-700">
-                  <span className="text-sm font-semibold text-gray-800 dark:text-slate-100">{displayNameFor(m.user_id)}</span>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Monto total</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
                   <input
                     type="number"
                     step="0.01"
-                    value={customSplits[m.user_id] ?? ''}
-                    onChange={e =>
-                      setCustomSplits(prev => ({ ...prev, [m.user_id]: e.target.value }))
-                    }
-                    className="w-24 p-2 border rounded bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 text-right"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    className="w-full pl-8 pr-4 py-4 border rounded-2xl bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 font-bold text-lg"
                     placeholder="0.00"
+                    required
                     disabled={creating}
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Pagador</label>
+                <select
+                  value={paidBy}
+                  onChange={e => setPaidBy(e.target.value)}
+                  className="w-full p-4 border rounded-2xl bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 font-medium"
+                  required
+                  disabled={creating}
+                >
+                  <option value="">¿Quién pagó?</option>
+                  {members.map(m => (
+                    <option key={m.user_id} value={m.user_id}>
+                      {displayNameFor(m.user_id)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t dark:border-slate-800">
+            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-200 uppercase tracking-tight">Regla de división</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { id: 'equal', title: 'Igualitario', desc: 'Todos pagan lo mismo' },
+                { id: 'full', title: 'Liquidación Total', desc: 'Una persona debe el total' },
+                { id: 'custom', title: 'Personalizado', desc: 'Montos específicos p/u' },
+              ].map((type) => (
+                <label 
+                  key={type.id}
+                  className={`flex items-center gap-4 p-4 rounded-2xl border transition-all cursor-pointer ${
+                    splitType === type.id 
+                      ? 'border-green-500 bg-green-50 dark:bg-green-900/10 ring-1 ring-green-500' 
+                      : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900/50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="splitType"
+                    value={type.id}
+                    checked={splitType === type.id}
+                    onChange={() => setSplitType(type.id as SplitType)}
+                    className="h-5 w-5 text-green-600 focus:ring-green-500 border-gray-300"
+                    disabled={creating}
+                  />
+                  <div>
+                    <p className="font-bold text-gray-900 dark:text-white text-sm">{type.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{type.desc}</p>
+                  </div>
+                </label>
               ))}
             </div>
           </div>
-        )}
 
-        <div className="flex flex-col md:flex-row gap-3 pt-6 pb-12 md:pb-0">
+          {splitType === 'full' && (
+            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl p-4 space-y-3">
+               <label className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest px-1">¿A quién beneficia?</label>
+              <select
+                value={fullBeneficiaryId}
+                onChange={e => setFullBeneficiaryId(e.target.value)}
+                className="w-full p-4 border rounded-xl bg-white dark:bg-slate-800 border-amber-200 dark:border-amber-900/30 text-gray-900 dark:text-slate-100"
+                disabled={creating || !paidBy}
+                required
+              >
+                <option value="">Selecciona beneficiario</option>
+                {members
+                  .filter(m => m.user_id !== paidBy)
+                  .map(m => (
+                    <option key={m.user_id} value={m.user_id}>
+                      {displayNameFor(m.user_id)}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {splitType === 'custom' && (
+            <div className="space-y-3">
+              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Montos por persona</label>
+              <div className="space-y-2">
+                {members.map(m => (
+                  <div key={m.user_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/30 rounded-xl border dark:border-slate-800">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">{displayNameFor(m.user_id)}</span>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={customSplits[m.user_id] ?? ''}
+                      onChange={e =>
+                        setCustomSplits(prev => ({ ...prev, [m.user_id]: e.target.value }))
+                      }
+                      className="w-24 p-2 border rounded bg-white dark:bg-slate-900 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 text-right font-bold text-sm"
+                      placeholder="0.00"
+                      disabled={creating}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </form>
+
+        {/* Action Bottom */}
+        <div className="p-6 border-t dark:border-slate-800 bg-gray-50 dark:bg-slate-900 shrink-0 space-y-3">
           <button
             type="submit"
+            onClick={handleSubmit as any}
             disabled={creating}
-            className="w-full py-4 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-xl hover:from-green-700 hover:to-teal-600 transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed order-1 md:order-2"
+            className="w-full py-4 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-2xl hover:from-green-700 hover:to-teal-600 transition-all shadow-xl shadow-green-500/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
           >
-            {creating ? 'Procesando...' : 'Confirmar Gasto'}
+            {creating ? 'Procesando...' : 'Crear Gasto'}
           </button>
           <button
             type="button"
             onClick={onCancel}
             disabled={creating}
-            className="w-full py-4 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 order-2 md:order-1"
+            className="w-full py-3 text-sm text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 font-bold transition-colors"
           >
             Cancelar
           </button>
         </div>
-      </form>
+      </motion.div>
     </div>
   )
 }

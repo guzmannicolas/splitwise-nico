@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import ExpenseForm from './ExpenseForm'
 import type { Member, SplitType } from '../../lib/services/types'
+import { AnimatePresence } from 'framer-motion'
 
 interface ExpenseComposerProps {
   members: Member[]
@@ -16,10 +17,6 @@ interface ExpenseComposerProps {
   displayNameFor: (userId: string) => string
 }
 
-/**
- * Encapsula el botón de agregar gasto y el formulario, manejando su estado interno.
- * Responsabilidad: controlar visibilidad del formulario y delegar creación.
- */
 export default function ExpenseComposer({
   members,
   onCreate,
@@ -37,7 +34,7 @@ export default function ExpenseComposer({
     fullBeneficiaryId?: string
   ) => {
     await onCreate(description, amount, paidBy, splitType, customSplits, fullBeneficiaryId)
-    setShowForm(false) // ocultar formulario después de crear
+    setShowForm(false)
   }
 
   return (
@@ -54,15 +51,17 @@ export default function ExpenseComposer({
         </button>
       )}
 
-      {showForm && (
-        <ExpenseForm
-          members={members}
-          onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
-          creating={creating}
-          displayNameFor={displayNameFor}
-        />
-      )}
+      <AnimatePresence>
+        {showForm && (
+          <ExpenseForm
+            members={members}
+            onSubmit={handleSubmit}
+            onCancel={() => setShowForm(false)}
+            creating={creating}
+            displayNameFor={displayNameFor}
+          />
+        )}
+      </AnimatePresence>
     </>
   )
 }
