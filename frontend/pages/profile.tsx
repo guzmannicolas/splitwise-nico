@@ -77,8 +77,8 @@ export default function Profile() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500"></div>
+        <div className="flex items-center justify-center min-h-[80vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-500 dark:border-blue-400"></div>
         </div>
       </Layout>
     )
@@ -86,32 +86,32 @@ export default function Profile() {
 
   return (
     <Layout>
-      <div className="flex items-center justify-center min-h-[80vh] bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-2">
-        <div className="w-full max-w-lg bg-white/90 shadow-xl rounded-2xl p-8 border border-blue-100 backdrop-blur-md">
-          <h1 className="text-3xl font-extrabold text-blue-700 mb-2 text-center tracking-tight">Mi Perfil</h1>
-          <p className="text-center text-gray-500 mb-8">Gestiona tu información personal</p>
+      <div className="flex items-center justify-center min-h-[80vh] py-8 px-2">
+        <div className="w-full max-w-lg bg-white/90 dark:bg-slate-800/90 shadow-xl rounded-2xl p-8 border border-blue-100 dark:border-slate-700 backdrop-blur-md">
+          <h1 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-2 text-center tracking-tight">Mi Perfil</h1>
+          <p className="text-center text-gray-500 dark:text-slate-400 mb-8">Gestiona tu información personal</p>
           <form onSubmit={saveProfile} className="space-y-7">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 disabled
-                className="w-full p-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-              <p className="text-xs text-gray-400 mt-1">El email no se puede cambiar</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">El email no se puede cambiar</p>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Nombre para mostrar</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Nombre para mostrar</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Ej: Bruno Guzmán"
-                className="w-full p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800"
                 required
               />
-              <p className="text-xs text-gray-400 mt-1">Este nombre se mostrará en los grupos y gastos</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Este nombre se mostrará en los grupos y gastos</p>
             </div>
             <button
               type="submit"

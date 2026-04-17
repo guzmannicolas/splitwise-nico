@@ -83,6 +83,14 @@ export default function Dashboard({ user: serverUser, initialGroups }: Dashboard
 
   // Estado UI y datos
   const [activeView, setActiveView] = useState<ViewType>('summary')
+
+  // Sincronizar activeView con la URL para soportar navegación móvil
+  useEffect(() => {
+    if (router.query.view) {
+      setActiveView(router.query.view as ViewType)
+    }
+  }, [router.query.view])
+
   const [groups, setGroups] = useState<Group[]>(initialGroups)
   const [newGroupName, setNewGroupName] = useState('')
   const [newGroupDesc, setNewGroupDesc] = useState('')
@@ -181,16 +189,16 @@ export default function Dashboard({ user: serverUser, initialGroups }: Dashboard
   return (
     <Layout serverUser={serverUser}>
       <div className="max-w-7xl mx-auto p-4">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">
+        {/* Header - Oculto en móvil */}
+        <div className="hidden lg:block bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-blue-100 mt-1">Administra tus grupos y finanzas</p>
         </div>
 
         {/* Layout: Sidebar + Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar izquierdo */}
-          <div className="lg:col-span-1">
+          {/* Sidebar izquierdo - Oculto en móvil */}
+          <div className="hidden lg:block lg:col-span-1">
             <DashboardSidebar
               activeView={activeView}
               onChange={setActiveView}
