@@ -16,6 +16,7 @@ interface ExpenseListProps {
   ) => Promise<void>
   onDelete: (expenseId: string) => Promise<void>
   displayNameFor: (userId: string) => string
+  isRefreshing?: boolean
 }
 
 /**
@@ -29,7 +30,8 @@ export default function ExpenseList({
   currentUserId,
   onEdit,
   onDelete,
-  displayNameFor
+  displayNameFor,
+  isRefreshing
 }: ExpenseListProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [isExpanded, setIsExpanded] = useState(true)
@@ -109,7 +111,15 @@ export default function ExpenseList({
         className="text-2xl font-bold text-blue-700 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span>Gastos</span>
+        <span className="flex items-center gap-3">
+          <span>Gastos</span>
+          {isRefreshing && (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-xs font-normal text-blue-500 hidden sm:inline">Actualizando...</span>
+            </div>
+          )}
+        </span>
         <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
       </h2>
       {isExpanded && (

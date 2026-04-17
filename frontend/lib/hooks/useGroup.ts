@@ -17,6 +17,7 @@ export function useGroup(groupId: string | undefined) {
   const [settlements, setSettlements] = useState<Settlement[]>([])
   const [balances, setBalances] = useState<Balance[]>([])
   const [loading, setLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Cargar datos del grupo
@@ -26,11 +27,15 @@ export function useGroup(groupId: string | undefined) {
     fetchGroupData()
   }, [groupId])
 
-  const fetchGroupData = async () => {
+  const fetchGroupData = async (background = false) => {
     if (!groupId) return
 
     try {
-      setLoading(true)
+      if (background) {
+        setIsRefreshing(true)
+      } else {
+        setLoading(true)
+      }
       setError(null)
 
       // 1. Cargar grupo
@@ -78,7 +83,11 @@ export function useGroup(groupId: string | undefined) {
       setError(err instanceof Error ? err.message : 'Error al cargar el grupo')
       console.error('Error en useGroup:', err)
     } finally {
-      setLoading(false)
+      if (background) {
+        setIsRefreshing(false)
+      } else {
+        setLoading(false)
+      }
     }
   }
 
@@ -90,6 +99,7 @@ export function useGroup(groupId: string | undefined) {
     settlements,
     balances,
     loading,
+    isRefreshing,
     error,
     refresh: fetchGroupData
   }

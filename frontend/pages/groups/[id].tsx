@@ -28,7 +28,7 @@ export default function GroupDetail() {
   const groupId = typeof id === 'string' ? id : undefined
 
   // Hook personalizado para datos del grupo
-  const { group, members, expenses, splits, settlements, balances, loading, error, refresh } = useGroup(groupId)
+  const { group, members, expenses, splits, settlements, balances, loading, isRefreshing, error, refresh } = useGroup(groupId)
 
   // Usuario actual
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string | null } | null>(null)
@@ -43,13 +43,13 @@ export default function GroupDetail() {
     groupId || '',
     memberIds,
     currentUser?.id || '',
-    refresh
+    () => refresh(true)
   )
 
   // Hook para operaciones de liquidaciones
   const { createSettlement, deleteSettlement, creating: creatingSettlement } = useSettlementOperations(
     groupId || '',
-    refresh
+    () => refresh(true)
   )
 
   // Hook para detalles de balances
@@ -125,7 +125,7 @@ export default function GroupDetail() {
       if (error) throw error
 
       alert(`Invitado "${fullName}" agregado correctamente`)
-      refresh()
+      refresh(true)
     } catch (err: any) {
       console.error('Error agregando invitado:', err)
       alert('Error al agregar invitado: ' + (err?.message || String(err)))
@@ -274,6 +274,7 @@ export default function GroupDetail() {
               onEdit={updateExpense}
               onDelete={deleteExpense}
               displayNameFor={displayNameFor}
+              isRefreshing={isRefreshing}
             />
 
             {/* Sección de liquidaciones */}
@@ -286,6 +287,7 @@ export default function GroupDetail() {
               onDeleteSettlement={deleteSettlement}
               creating={creatingSettlement}
               displayNameFor={displayNameFor}
+              isRefreshing={isRefreshing}
             />
 
             {/* Historial de actividad */}

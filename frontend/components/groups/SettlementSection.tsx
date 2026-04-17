@@ -10,6 +10,7 @@ type Props = {
   onDeleteSettlement: (settlementId: string) => void
   creating: boolean
   displayNameFor: (userId: string) => string
+  isRefreshing?: boolean
 }
 
 export default function SettlementSection({
@@ -20,7 +21,8 @@ export default function SettlementSection({
   onCreateSettlement,
   onDeleteSettlement,
   creating,
-  displayNameFor
+  displayNameFor,
+  isRefreshing
 }: Props) {
   const [showForm, setShowForm] = useState(false)
   const [isExpanded, setIsExpanded] = useState(true)
@@ -66,7 +68,14 @@ export default function SettlementSection({
         className="text-2xl font-bold text-blue-700 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span>Liquidaciones</span>
+        <span className="flex items-center gap-3">
+          <span>Liquidaciones</span>
+          {isRefreshing && (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
+            </div>
+          )}
+        </span>
         <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
       </h2>
 
