@@ -306,7 +306,7 @@ export default function GroupDetail({
         {/* Grid de 2 columnas */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Columna izquierda */}
-          <div className="space-y-6">
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6">
             <MemberList
               members={members}
               currentUserId={currentUser?.id || null}
