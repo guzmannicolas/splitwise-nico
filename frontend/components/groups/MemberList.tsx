@@ -20,7 +20,7 @@ export default function MemberList({
   const [guestName, setGuestName] = useState('')
   const [addingGuest, setAddingGuest] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+
   // Para desktop, mantenemos la vista expandida
   const [isDesktop, setIsDesktop] = useState(false)
 
@@ -50,16 +50,31 @@ export default function MemberList({
     }
   }
 
+  const [visibleCount, setVisibleCount] = useState(4)
+
+  // Recortar la lista si es necesario
+  const shouldShowToggle = members.length > 4
+  const hasMore = members.length > visibleCount
+  const displayedMembers = members.slice(0, visibleCount)
+
+  const handleShowMore = () => {
+    setVisibleCount(prev => prev + 4)
+  }
+
+  const handleShowLess = () => {
+    setVisibleCount(4)
+  }
+
   // Renderizado del contenido (reutilizable para Desktop y Modal)
   const renderContent = () => (
     <div className="space-y-4">
       <ul className="space-y-2">
-        {members.map(m => {
+        {displayedMembers.map(m => {
           const isGuest = m.profiles?.email === null
           return (
             <li
               key={m.user_id}
-              className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-slate-800/50 rounded-xl border border-indigo-100/50 dark:border-slate-700/50"
+              className="flex items-center gap-3 p-3 bg-indigo-50/50 dark:bg-slate-800/50 rounded-xl border border-indigo-100/50 dark:border-slate-700/50 transition-all duration-300 animate-in fade-in"
             >
               <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-sm font-bold">
                 {m.profiles?.full_name ? m.profiles.full_name.charAt(0).toUpperCase() : '?'}
@@ -67,7 +82,7 @@ export default function MemberList({
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-gray-900 dark:text-white truncate">
                   {m.profiles?.full_name || m.user_id.slice(0, 8)}
-                  {m.user_id === currentUserId && <span className="text-indigo-600 dark:text-indigo-400 ml-1">(Tú)</span>}
+                  {m.user_id === currentUserId && <span className="text-indigo-600 dark:text-indigo-400 ml-1 font-normal text-xs">(Tú)</span>}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
                   {isGuest ? 'Usuario invitado' : (m.profiles?.email || 'Miembro')}
@@ -83,29 +98,27 @@ export default function MemberList({
         })}
       </ul>
 
-      <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-4">
-        <div>
-          <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">Añadir Invitado</label>
-          <form onSubmit={handleAddGuest} className="flex gap-2">
-            <input
-              type="text"
-              value={guestName}
-              onChange={e => setGuestName(e.target.value)}
-              className="flex-1 px-4 py-2 text-sm border rounded-xl bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 transition-all"
-              placeholder="Ej: Juan Pérez"
-              disabled={addingGuest}
-              required
-            />
+      {shouldShowToggle && (
+        <div className="flex gap-2">
+          {hasMore ? (
             <button
-              type="submit"
-              disabled={addingGuest}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95 text-sm"
+              onClick={handleShowMore}
+              className="w-full py-2 text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center justify-center gap-2 transition-colors border border-dashed border-indigo-200 dark:border-slate-700 rounded-xl bg-indigo-50/30 dark:bg-slate-800/20"
             >
-              {addingGuest ? '...' : 'Add'}
+              Ver {Math.min(4, members.length - visibleCount)} más... <span>▼</span>
             </button>
-          </form>
+          ) : (
+            <button
+              onClick={handleShowLess}
+              className="w-full py-2 text-sm font-bold text-indigo-400 dark:text-slate-500 hover:text-indigo-500 flex items-center justify-center gap-2 transition-colors border border-dashed border-indigo-100 dark:border-slate-800 rounded-xl bg-gray-50/30 dark:bg-slate-800/10"
+            >
+              Ver menos <span>▲</span>
+            </button>
+          )}
         </div>
+      )}
 
+      <div className="pt-4 border-t border-gray-100 dark:border-slate-800 space-y-4">
         <div>
           <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">Invitar por Email</label>
           <form onSubmit={handleInvite} className="flex gap-2">
@@ -123,7 +136,28 @@ export default function MemberList({
               disabled={inviting}
               className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-sm"
             >
-              {inviting ? '...' : 'Invite'}
+              {inviting ? '...' : 'Agregar'}
+            </button>
+          </form>
+        </div>
+        <div>
+          <label className="block text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-2 px-1">Crear Invitado sin Mail</label>
+          <form onSubmit={handleAddGuest} className="flex gap-2">
+            <input
+              type="text"
+              value={guestName}
+              onChange={e => setGuestName(e.target.value)}
+              className="flex-1 px-4 py-2 text-sm border rounded-xl bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-amber-500 transition-all"
+              placeholder="Ej: Juan Pérez"
+              disabled={addingGuest}
+              required
+            />
+            <button
+              type="submit"
+              disabled={addingGuest}
+              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-all shadow-lg shadow-amber-500/20 active:scale-95 text-sm"
+            >
+              {addingGuest ? '...' : 'Agregar '}
             </button>
           </form>
         </div>
@@ -147,7 +181,7 @@ export default function MemberList({
   return (
     <>
       {/* Gatillo (Trigger Card) */}
-      <button 
+      <button
         onClick={() => setIsModalOpen(true)}
         className="w-full bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-4 border border-indigo-100 dark:border-slate-800 flex flex-col items-center justify-center gap-2 active:scale-95 transition-all text-indigo-600 dark:text-indigo-400"
       >
@@ -164,14 +198,14 @@ export default function MemberList({
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
           <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={() => setIsModalOpen(false)}></div>
-          
+
           <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl flex flex-col max-h-[90vh] border-t border-indigo-100 dark:border-slate-800 overflow-hidden animate-in slide-in-from-bottom-full duration-300">
             {/* Header Modal */}
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white flex justify-between items-center shrink-0">
               <h2 className="text-xl font-bold flex items-center gap-2">
                 <span>👥</span> Miembros del Grupo
               </h2>
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="h-10 w-10 flex items-center justify-center rounded-full bg-white/20 hover:bg-white/30 transition-colors text-2xl leading-none"
               >
@@ -186,7 +220,7 @@ export default function MemberList({
 
             {/* Footer Modal */}
             <div className="p-4 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex justify-center shrink-0">
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="w-full max-w-xs py-3 bg-gray-600 dark:bg-slate-700 text-white font-bold rounded-2xl hover:bg-gray-700 dark:hover:bg-slate-600 shadow-lg active:scale-95 transition-all"
               >

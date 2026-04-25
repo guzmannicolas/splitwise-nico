@@ -146,12 +146,28 @@ export default function GroupDetail({
     if (!currentUser || !groupId) return
     setInviting(true)
     try {
-      // Verificar si ya es miembro
-      const isAlreadyMember = members.some(
-        m => m.profiles?.email === email || m.user_id === email
-      )
+      const cleanEmail = email.trim().toLowerCase()
+
+      // 1. Verificar si ya es miembro real
+      const isAlreadyMember = members.some(m => {
+        const memberEmail = m.profiles?.email?.toLowerCase().trim()
+        const memberUserId = m.user_id?.toLowerCase().trim()
+        return memberEmail === cleanEmail || memberUserId === cleanEmail
+      })
+
       if (isAlreadyMember) {
-        alert('Este usuario ya es miembro del grupo')
+        alert('Este usuario ya es miembro del grupo: ' + cleanEmail)
+        return
+      }
+
+      // 2. Verificar si ya hay una invitación pendiente en la BD
+      const { data: currentInvitations } = await GroupService.getGroupInvitations(groupId)
+      const hasPending = currentInvitations?.some(inv => 
+        inv.invited_email.toLowerCase().trim() === cleanEmail && inv.status === 'pending'
+      )
+
+      if (hasPending) {
+        alert('Ya existe una invitación pendiente para: ' + cleanEmail)
         return
       }
 
@@ -160,10 +176,15 @@ export default function GroupDetail({
       const groupName = group?.name || 'un grupo'
 
       const invitationService = new InvitationService()
-      const result = await invitationService.invite(groupId, email, currentUser.id, siteUrl, invitedByName, groupName)
+      const result = await invitationService.invite(groupId, cleanEmail, currentUser.id, siteUrl, invitedByName, groupName)
 
       if (!result.ok) {
-        alert(result.message)
+        // Manejar error de Supabase si por casualidad llega hasta aquí (ej. race condition)
+        if (result.message.includes('unique constraint') || result.message.includes('duplicate key')) {
+          alert('Ya se ha enviado una invitación a esta dirección recientemente.')
+        } else {
+          alert(result.message)
+        }
       } else if (result.emailSent) {
         alert(result.message)
       } else if (result.manualLink) {
@@ -180,16 +201,27 @@ export default function GroupDetail({
   // Agregar invitado (guest user)
   const handleAddGuest = async (fullName: string) => {
     if (!currentUser || !groupId) return
+    const cleanName = fullName.trim()
     
+    // Verificar si ya existe alguien con ese nombre (miembro real o guest)
+    const nameExists = members.some(m => 
+      m.profiles?.full_name?.toLowerCase().trim() === cleanName.toLowerCase()
+    )
+
+    if (nameExists) {
+      alert(`Ya existe un miembro llamado "${cleanName}" en este grupo.`)
+      return
+    }
+
     try {
       const { data, error } = await supabase.rpc('add_guest_to_group', {
         p_group_id: groupId,
-        p_full_name: fullName
+        p_full_name: cleanName
       })
 
       if (error) throw error
 
-      alert(`Invitado "${fullName}" agregado correctamente`)
+      alert(`Invitado "${cleanName}" agregado correctamente`)
       refresh(true)
     } catch (err: any) {
       console.error('Error agregando invitado:', err)
@@ -314,8 +346,8 @@ export default function GroupDetail({
               onAddGuest={handleAddGuest}
               inviting={inviting}
             />
-            <BalanceCard 
-              balances={balances} 
+            <BalanceCard
+              balances={balances}
               onShowDetails={() => setShowBalanceDetails(true)}
             />
           </div>

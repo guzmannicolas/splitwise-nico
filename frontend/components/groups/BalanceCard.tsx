@@ -9,6 +9,7 @@ interface BalanceCardProps {
 export default function BalanceCard({ balances, onShowDetails }: BalanceCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDesktop, setIsDesktop] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(4)
 
   useEffect(() => {
     const checkIsDesktop = () => setIsDesktop(window.innerWidth >= 1024)
@@ -21,38 +22,70 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
     return null
   }
 
+  // Recortar la lista incrementalmente
+  const shouldShowToggle = balances.length > 4
+  const hasMore = balances.length > visibleCount
+  const displayedBalances = balances.slice(0, visibleCount)
+
+  const handleShowMore = () => {
+    setVisibleCount(prev => prev + 4)
+  }
+
+  const handleShowLess = () => {
+    setVisibleCount(4)
+  }
+
   const renderContent = () => (
     <div className="space-y-4">
       <div className="space-y-2">
-        {balances.map(b => (
+        {displayedBalances.map(b => (
           <div
             key={b.user_id}
-            className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-slate-800/50 dark:to-slate-800/50 rounded-xl border border-purple-100 dark:border-slate-700"
+            className="flex items-center justify-between p-3 bg-gradient-to-r from-purple-50/50 to-pink-50/50 dark:from-slate-800/50 dark:to-slate-800/50 rounded-xl border border-purple-100 dark:border-slate-700 animate-in fade-in transition-all duration-300"
           >
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold">
                 {b.name.charAt(0).toUpperCase()}
               </div>
-              <span className="font-bold text-gray-800 dark:text-slate-100 text-sm">{b.name}</span>
+              <span className="font-bold text-gray-800 dark:text-slate-100 text-sm whitespace-nowrap overflow-hidden text-ellipsis max-w-[120px]">{b.name}</span>
             </div>
             <span
-              className={`text-lg font-bold ${
-                b.balance > 0.01
+              className={`text-lg font-bold ${b.balance > 0.01
                   ? 'text-green-600 dark:text-green-500'
                   : b.balance < -0.01
-                  ? 'text-red-600 dark:text-red-500'
-                  : 'text-gray-500 dark:text-slate-500'
-              }`}
+                    ? 'text-red-600 dark:text-red-500'
+                    : 'text-gray-500 dark:text-slate-500'
+                }`}
             >
               {b.balance > 0.01
                 ? `+$${b.balance.toFixed(2)}`
                 : b.balance < -0.01
-                ? `-$${Math.abs(b.balance).toFixed(2)}`
-                : 'Salidado'}
+                  ? `-$${Math.abs(b.balance).toFixed(2)}`
+                  : 'Saldado'}
             </span>
           </div>
         ))}
       </div>
+
+      {shouldShowToggle && (
+        <div className="flex gap-2">
+          {hasMore ? (
+            <button
+              onClick={handleShowMore}
+              className="w-full py-2 text-sm font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center justify-center gap-2 transition-colors border border-dashed border-purple-200 dark:border-slate-700 rounded-xl bg-purple-50/30 dark:bg-slate-800/20"
+            >
+              Ver {Math.min(4, balances.length - visibleCount)} más... <span>▼</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleShowLess}
+              className="w-full py-2 text-sm font-bold text-purple-400 dark:text-slate-500 hover:text-purple-500 flex items-center justify-center gap-2 transition-colors border border-dashed border-purple-100 dark:border-slate-800 rounded-xl bg-gray-50/30 dark:bg-slate-800/10"
+            >
+              Ver menos <span>▲</span>
+            </button>
+          )}
+        </div>
+      )}
 
       {onShowDetails && (
         <button
@@ -62,7 +95,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
           }}
           className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-purple-500/20 active:scale-95 flex items-center justify-center gap-2"
         >
-          <span>📊</span> Ver detalles de deudas
+          <span>📊</span> {isDesktop ? 'Ver detalles de deudas' : 'Ver desglose completo'}
         </button>
       )}
 

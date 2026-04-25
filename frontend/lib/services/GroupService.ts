@@ -69,4 +69,16 @@ export class GroupService {
 
     return !error && !!data
   }
+
+  /**
+   * Obtiene todas las invitaciones de un grupo
+   */
+  static async getGroupInvitations(groupId: string): Promise<{ data: any[] | null; error: any }> {
+    const { data, error } = await supabase
+      .from('group_invitations')
+      .select('*')
+      .eq('group_id', groupId)
+
+    return { data, error }
+  }
 }
