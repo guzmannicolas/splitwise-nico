@@ -53,14 +53,14 @@ npm install
 
 ```bash
 # Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://pmpedtfoszvsqfjhnkhf.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtcGVkdGZvc3p2c3Fmamhua2hmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwNDQxNzksImV4cCI6MjA3NzYyMDE3OX0.G0vPoiEDQH2hhunQ9eDaHM8VQeu8-jKNBJZpYNcZrPw
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyxxxxxxxxxxx
 
 # App Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
-⚠️ **Importante**: Pedirle a Nico las credenciales actualizadas de Supabase si estas no funcionan.
+⚠️ **Importante**: Pedirle a Nico las credenciales actualizadas de Supabase.
 
 ---
 
