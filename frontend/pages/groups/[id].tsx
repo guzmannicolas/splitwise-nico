@@ -229,6 +229,38 @@ export default function GroupDetail({
     }
   }
 
+  // Eliminar invitado
+  const handleRemoveGuest = async (userId: string) => {
+    if (!groupId) return
+    try {
+      // 1. Eliminar la membresía del grupo
+      const { error: memberError } = await supabase
+        .from('group_members')
+        .delete()
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
+
+      if (memberError) throw memberError
+
+      // 2. Eliminar el perfil de la tabla 'profiles' para no dejar registros huérfanos
+      // Solo lo hacemos si es un guest (email es null) para seguridad
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
+        .is('email', null)
+
+      if (profileError) {
+        console.warn('No se pudo eliminar el perfil (quizás está en otros grupos):', profileError)
+      }
+
+      refresh(true)
+    } catch (err: any) {
+      console.error('Error eliminando invitado:', err)
+      alert('No se pudo eliminar al invitado. Es probable que tenga gastos o deudas registradas a su nombre.')
+    }
+  }
+
   // Salir del grupo
   const leaveGroup = async () => {
     if (!currentUser || !groupId) return
@@ -344,6 +376,7 @@ export default function GroupDetail({
               currentUserId={currentUser?.id || null}
               onInvite={handleInvite}
               onAddGuest={handleAddGuest}
+              onRemoveGuest={handleRemoveGuest}
               inviting={inviting}
             />
             <BalanceCard
