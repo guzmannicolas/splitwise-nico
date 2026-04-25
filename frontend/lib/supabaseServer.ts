@@ -15,10 +15,24 @@ export function createSupabaseServerClient(context: GetServerSidePropsContext) {
           return context.req.cookies[name]
         },
         set(name: string, value: string, options: CookieOptions) {
-          context.res.setHeader('Set-Cookie', `${name}=${value}; Path=/; ${options.httpOnly ? 'HttpOnly;' : ''} ${options.secure ? 'Secure;' : ''} SameSite=Lax`)
+          const cookieStr = `${name}=${value}; Path=${options.path || '/'}; ${options.httpOnly ? 'HttpOnly;' : ''} ${options.secure ? 'Secure;' : ''} SameSite=${options.sameSite || 'Lax'}; max-age=${options.maxAge || ''}`
+          try {
+            context.res.appendHeader('Set-Cookie', cookieStr)
+          } catch (e) {
+            let existing = context.res.getHeader('Set-Cookie') ?? []
+            if (typeof existing === 'string') existing = [existing]
+            context.res.setHeader('Set-Cookie', [...(existing as string[]), cookieStr])
+          }
         },
-        remove(name: string) {
-          context.res.setHeader('Set-Cookie', `${name}=; Path=/; Max-Age=0`)
+        remove(name: string, options: CookieOptions) {
+          const cookieStr = `${name}=; Path=${options.path || '/'}; Max-Age=0`
+          try {
+            context.res.appendHeader('Set-Cookie', cookieStr)
+          } catch (e) {
+            let existing = context.res.getHeader('Set-Cookie') ?? []
+            if (typeof existing === 'string') existing = [existing]
+            context.res.setHeader('Set-Cookie', [...(existing as string[]), cookieStr])
+          }
         },
       },
     }
