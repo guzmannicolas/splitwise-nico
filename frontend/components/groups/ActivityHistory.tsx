@@ -20,13 +20,22 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
     ...settlements.map(s => ({ type: 'settlement' as const, data: s, timestamp: s.created_at }))
   ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
+  const [visibleCount, setVisibleCount] = useState(6)
+  const showMore = () => setVisibleCount(prev => prev + 6)
+  const showAll = () => setVisibleCount(activities.length)
+
   return (
     <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800 transition-colors">
       <h2 
         className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-4 cursor-pointer flex items-center justify-between hover:text-blue-800 dark:hover:text-indigo-300 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
-        <span>Actividad Reciente</span>
+        <span className="flex items-center gap-3">
+          <span>Actividad Reciente</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-slate-400">
+            ({activities.length} en total)
+          </span>
+        </span>
         <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
       </h2>
   {isExpanded && (
@@ -35,44 +44,63 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
       {activities.length === 0 ? (
         <p className="text-gray-400 dark:text-slate-500 text-center py-8 italic">No hay actividad aún</p>
       ) : (
-        <ul className="space-y-3">
-          {activities.slice(0, 15).map((item, idx) => (
-            <li
-              key={idx}
-              className={`p-4 rounded-xl border-l-4 transition-all ${
-                item.type === 'expense'
-                  ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-500 dark:border-blue-500/50'
-                  : 'bg-purple-50 dark:bg-purple-900/10 border-purple-500 dark:border-purple-500/50'
-              }`}
-            >
-              {item.type === 'expense' ? (
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Gasto</span>
-                    <span className="font-bold text-blue-700 dark:text-blue-300">${item.data.amount.toFixed(2)}</span>
+        <div className="space-y-6">
+          <ul className="space-y-3">
+            {activities.slice(0, visibleCount).map((item, idx) => (
+              <li
+                key={idx}
+                className={`p-4 rounded-xl border-l-4 transition-all ${
+                  item.type === 'expense'
+                    ? 'bg-blue-50 dark:bg-blue-900/10 border-blue-500 dark:border-blue-500/50'
+                    : 'bg-purple-50 dark:bg-purple-900/10 border-purple-500 dark:border-purple-500/50'
+                }`}
+              >
+                {item.type === 'expense' ? (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Gasto</span>
+                      <span className="font-bold text-blue-700 dark:text-blue-300">${item.data.amount.toFixed(2)}</span>
+                    </div>
+                    <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">{item.data.description}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                      Pagado por {displayNameFor(item.data.paid_by)} · {new Date(item.timestamp).toLocaleString()}
+                    </p>
                   </div>
-                  <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">{item.data.description}</p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                    Pagado por {displayNameFor(item.data.paid_by)} · {new Date(item.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ) : (
-                <div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Pago</span>
-                    <span className="font-bold text-purple-700 dark:text-purple-300">${item.data.amount.toFixed(2)}</span>
+                ) : (
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Pago</span>
+                      <span className="font-bold text-purple-700 dark:text-purple-300">${item.data.amount.toFixed(2)}</span>
+                    </div>
+                    <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">
+                      {displayNameFor(item.data.from_user_id)} → {displayNameFor(item.data.to_user_id)}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                      {new Date(item.timestamp).toLocaleString()}
+                    </p>
                   </div>
-                  <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">
-                    {displayNameFor(item.data.from_user_id)} → {displayNameFor(item.data.to_user_id)}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                    {new Date(item.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+
+          {visibleCount < activities.length && (
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-blue-50 dark:border-slate-800">
+              <button
+                onClick={showMore}
+                className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold rounded-xl border border-blue-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+              >
+                Ver más (6 más)
+              </button>
+              <button
+                onClick={showAll}
+                className="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md"
+              >
+                Ver todos ({activities.length})
+              </button>
+            </div>
+          )}
+        </div>
       )}
       </>
       )}

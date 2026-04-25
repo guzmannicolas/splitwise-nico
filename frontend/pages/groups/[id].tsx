@@ -162,7 +162,7 @@ export default function GroupDetail({
 
       // 2. Verificar si ya hay una invitación pendiente en la BD
       const { data: currentInvitations } = await GroupService.getGroupInvitations(groupId)
-      const hasPending = currentInvitations?.some(inv => 
+      const hasPending = currentInvitations?.some(inv =>
         inv.invited_email.toLowerCase().trim() === cleanEmail && inv.status === 'pending'
       )
 
@@ -202,9 +202,9 @@ export default function GroupDetail({
   const handleAddGuest = async (fullName: string) => {
     if (!currentUser || !groupId) return
     const cleanName = fullName.trim()
-    
+
     // Verificar si ya existe alguien con ese nombre (miembro real o guest)
-    const nameExists = members.some(m => 
+    const nameExists = members.some(m =>
       m.profiles?.full_name?.toLowerCase().trim() === cleanName.toLowerCase()
     )
 
@@ -336,7 +336,7 @@ export default function GroupDetail({
         />
 
         {/* Grid de 2 columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Columna izquierda */}
           <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:space-y-6">
             <MemberList
@@ -364,6 +364,7 @@ export default function GroupDetail({
 
             {/* Lista de gastos */}
             <ExpenseList
+              key={group?.id || 'expense-list'}
               expenses={expenses}
               splits={splits}
               members={members}
@@ -389,6 +390,7 @@ export default function GroupDetail({
 
             {/* Historial de actividad */}
             <ActivityHistory
+              key={group?.id ? `activity-${group.id}` : 'activity-list'}
               expenses={expenses}
               settlements={settlements}
               displayNameFor={displayNameFor}

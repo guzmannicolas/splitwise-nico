@@ -41,6 +41,11 @@ export default function ExpenseList({
   const [editPaidBy, setEditPaidBy] = useState('')
   const [editSplitType, setEditSplitType] = useState<SplitType>('equal')
   const [editCustomSplits, setEditCustomSplits] = useState<Record<string, string>>({})
+  
+  // Paginación de gastos
+  const [visibleCount, setVisibleCount] = useState(6)
+  const showMore = () => setVisibleCount(prev => prev + 6)
+  const showAll = () => setVisibleCount(expenses.length)
 
   const toggleExpand = (id: string) => {
     setExpanded(prev => {
@@ -105,6 +110,9 @@ export default function ExpenseList({
     )
   }
 
+  const visibleExpenses = expenses.slice(0, visibleCount)
+  const hasMore = visibleCount < expenses.length
+
   return (
     <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800 transition-colors">
       <h2 
@@ -113,6 +121,9 @@ export default function ExpenseList({
       >
         <span className="flex items-center gap-3">
           <span>Gastos</span>
+          <span className="text-sm font-normal text-gray-500 dark:text-slate-400">
+            ({expenses.length} en total)
+          </span>
           {isRefreshing && (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
@@ -124,7 +135,7 @@ export default function ExpenseList({
       </h2>
       {isExpanded && (
       <div className="space-y-4">
-        {expenses.map(expense => (
+        {visibleExpenses.map(expense => (
           <div
             key={expense.id}
             className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-800 border border-blue-200 dark:border-slate-700 rounded-xl p-4 transition-all"
@@ -324,6 +335,23 @@ export default function ExpenseList({
             )}
           </div>
         ))}
+
+        {hasMore && (
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-blue-50 dark:border-slate-800">
+            <button
+              onClick={showMore}
+              className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold rounded-xl border border-blue-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+            >
+              Ver más (6 más)
+            </button>
+            <button
+              onClick={showAll}
+              className="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md"
+            >
+              Ver todos ({expenses.length})
+            </button>
+          </div>
+        )}
       </div>
       )}
     </div>
