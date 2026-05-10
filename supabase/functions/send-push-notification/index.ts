@@ -119,7 +119,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'authorization, content-type, apikey',
+        'Access-Control-Allow-Headers': 'authorization, content-type, apikey, x-client-info',
       },
     });
   }
