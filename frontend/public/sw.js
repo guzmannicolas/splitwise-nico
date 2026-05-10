@@ -119,11 +119,11 @@ self.addEventListener('notificationclick', (event) => {
     const { groupId, expenseId, type } = event.notification.data;
     
     if (type === 'new_expense' && groupId) {
-      urlToOpen = `/grupo/${groupId}`;
+      urlToOpen = `/groups/${groupId}`;
     } else if (type === 'settlement' && groupId) {
-      urlToOpen = `/grupo/${groupId}?tab=liquidaciones`;
+      urlToOpen = `/groups/${groupId}?tab=liquidaciones`;
     } else if (type === 'invitation' && groupId) {
-      urlToOpen = `/grupo/${groupId}`;
+      urlToOpen = `/groups/${groupId}`;
     }
   }
 
