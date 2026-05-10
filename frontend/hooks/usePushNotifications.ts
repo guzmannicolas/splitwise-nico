@@ -32,9 +32,8 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     if (supported && 'Notification' in window) {
       setPermission(Notification.permission);
     }
-
-    checkSubscription();
   }, []);
+
 
   // Verificar si ya está suscrito
   const checkSubscription = useCallback(async () => {
@@ -54,6 +53,13 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       setIsLoading(false);
     }
   }, [user, isSupported]);
+
+  // Re-check subscription once user and support state are known
+  useEffect(() => {
+    if (user && isSupported) {
+      checkSubscription();
+    }
+  }, [user, isSupported, checkSubscription]);
 
   // Suscribirse a push notifications
   const subscribe = useCallback(async () => {
