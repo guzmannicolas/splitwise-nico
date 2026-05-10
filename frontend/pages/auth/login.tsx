@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { verifyTurnstile } from '../../lib/verifyTurnstile'
 
 import { redirectIfAuthed } from '../../lib/authGuard'
 import { GetServerSideProps } from 'next'
@@ -18,13 +20,35 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
+
+    if (!turnstileToken) {
+      setError('Completá la verificación de seguridad')
+      return
+    }
+
+    const valid = await verifyTurnstile(turnstileToken)
+    if (!valid) {
+      setError('Verificación de seguridad fallida, intentá de nuevo')
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
+      return
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message)
-    else router.push('/dashboard')
+    if (error) {
+      setError(error.message)
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
+    } else {
+      router.push('/dashboard')
+    }
   }
 
   const handleGoogleLogin = async () => {
@@ -43,19 +67,19 @@ export default function Login() {
       <form onSubmit={handleLogin} className="w-full max-w-md p-8 bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md transition-all">
         <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Iniciar Sesión</h2>
         {error && <p className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-3 rounded-lg mb-4 text-sm border border-red-100 dark:border-red-900/20">{error}</p>}
-        <input 
-          className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
-          placeholder="Email" 
-          value={email} 
-          onChange={e => setEmail(e.target.value)} 
+        <input
+          className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
+          placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
         />
         <div className="relative mb-4">
-          <input 
-            className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
-            type={showPassword ? "text" : "password"} 
-            placeholder="Contraseña" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
+          <input
+            className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
+            type={showPassword ? "text" : "password"}
+            placeholder="Contraseña"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
           />
           <button
             type="button"
@@ -75,9 +99,21 @@ export default function Login() {
             )}
           </button>
         </div>
-        <button 
-          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200" 
+
+        <div className="mb-4 flex justify-center">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+            onSuccess={setTurnstileToken}
+            onExpire={() => setTurnstileToken(null)}
+            onError={() => setTurnstileToken(null)}
+          />
+        </div>
+
+        <button
+          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50"
           type="submit"
+          disabled={!turnstileToken}
         >
           Iniciar Sesión
         </button>

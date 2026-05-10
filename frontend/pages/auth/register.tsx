@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import Link from 'next/link'
 import Layout from '../../components/Layout'
+import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import { verifyTurnstile } from '../../lib/verifyTurnstile'
 
 import { redirectIfAuthed } from '../../lib/authGuard'
 import { GetServerSideProps } from 'next'
@@ -17,29 +19,50 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null)
+  const turnstileRef = useRef<TurnstileInstance>(null)
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
+    setMessage(null)
+
+    if (!turnstileToken) {
+      setMessage('Completá la verificación de seguridad')
+      return
+    }
+
+    const valid = await verifyTurnstile(turnstileToken)
+    if (!valid) {
+      setMessage('Verificación de seguridad fallida, intentá de nuevo')
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
+      return
+    }
+
     try {
-      const { data, error } = await supabase.auth.signUp({ 
-        email, 
+      const { data, error } = await supabase.auth.signUp({
+        email,
         password,
         options: {
           emailRedirectTo: 'https://onkzxqtejpyauibwqhop.supabase.co/auth/v1/callback'
         }
       })
-      
+
       console.log('Response:', { data, error })
-      
+
       if (error) {
         console.error('Supabase error:', error)
         setMessage(error.message)
+        turnstileRef.current?.reset()
+        setTurnstileToken(null)
       } else {
         setMessage('Revisa tu correo para confirmar la cuenta')
       }
     } catch (err) {
       console.error('Caught error:', err)
       setMessage('Error inesperado: ' + (err instanceof Error ? err.message : String(err)))
+      turnstileRef.current?.reset()
+      setTurnstileToken(null)
     }
   }
 
@@ -60,26 +83,26 @@ export default function Register() {
           <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Registrarse</h2>
           {message && (
             <p className={`${
-              message.includes('Error') || message.includes('error') 
-                ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20' 
+              message.includes('Error') || message.includes('error') || message.includes('fallida') || message.includes('Completá')
+                ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20'
                 : 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/20'
             } p-3 rounded-lg mb-4 text-sm border`}>
               {message}
             </p>
           )}
-          <input 
-            className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
-            placeholder="Email" 
-            value={email} 
-            onChange={e => setEmail(e.target.value)} 
+          <input
+            className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
+            placeholder="Email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
           />
           <div className="relative mb-4">
-            <input 
-              className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors" 
-              type={showPassword ? "text" : "password"} 
-              placeholder="Contraseña" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
+            <input
+              className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
+              type={showPassword ? "text" : "password"}
+              placeholder="Contraseña"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
             />
             <button
               type="button"
@@ -99,9 +122,21 @@ export default function Register() {
               )}
             </button>
           </div>
-          <button 
-            className="w-full py-3 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg shadow-md hover:from-green-700 hover:to-teal-600 transition-all duration-200" 
+
+          <div className="mb-4 flex justify-center">
+            <Turnstile
+              ref={turnstileRef}
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY!}
+              onSuccess={setTurnstileToken}
+              onExpire={() => setTurnstileToken(null)}
+              onError={() => setTurnstileToken(null)}
+            />
+          </div>
+
+          <button
+            className="w-full py-3 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-lg shadow-md hover:from-green-700 hover:to-teal-600 transition-all duration-200 disabled:opacity-50"
             type="submit"
+            disabled={!turnstileToken}
           >
             Registrarse
           </button>
