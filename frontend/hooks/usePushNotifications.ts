@@ -115,24 +115,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
 
-      // 4. Guardar suscripción en la base de datos
+      // 4. Guardar suscripción en la base de datos (upsert por endpoint para soporte multi-dispositivo)
       const subscriptionJSON = subscription.toJSON();
 
-      // Primero intentar eliminar suscripción existente
-      await supabase
-        .from('push_subscriptions')
-        .delete()
-        .eq('user_id', user.id);
-
-      // Luego insertar la nueva
       const { error: dbError } = await supabase
         .from('push_subscriptions')
-        .insert({
+        .upsert({
           user_id: user.id,
           endpoint: subscriptionJSON.endpoint!,
           p256dh_key: subscriptionJSON.keys!.p256dh!,
           auth_key: subscriptionJSON.keys!.auth!,
-        });
+        }, { onConflict: 'user_id,endpoint' });
 
       if (dbError) throw dbError;
 
