@@ -1,19 +1,24 @@
 import { useState } from 'react'
 import { ExpenseService } from '../services/ExpenseService'
-import type { CreateExpenseData, UpdateExpenseData, SplitType } from '../services/types'
+import { NotificationService } from '../services/NotificationService'
+import type { CreateExpenseData, UpdateExpenseData, SplitType, Member } from '../services/types'
 
 /**
  * Hook personalizado para manejar operaciones de gastos
  * Responsabilidad: CRUD de gastos y estado del formulario
  */
 export function useExpenseOperations(
-  groupId: string, 
-  memberIds: string[], 
+  groupId: string,
+  memberIds: string[],
   currentUserId: string,
-  onSuccess: () => void
+  onSuccess: () => void,
+  members: Member[] = []
 ) {
   const [creating, setCreating] = useState(false)
   const [updating, setUpdating] = useState(false)
+
+  const getMemberName = (userId: string) =>
+    members.find(m => m.user_id === userId)?.profiles?.full_name ?? 'Alguien'
 
   /**
    * Crea un nuevo gasto
@@ -56,6 +61,7 @@ export function useExpenseOperations(
 
       if (result.success) {
         onSuccess()
+        NotificationService.notifyNewExpense(groupId, description, amount, getMemberName(paidBy))
       } else {
         alert(result.error || 'Error al crear el gasto')
       }
@@ -108,6 +114,7 @@ export function useExpenseOperations(
 
       if (result.success) {
         onSuccess()
+        NotificationService.notifyExpenseUpdated(groupId, description, getMemberName(currentUserId))
       } else {
         alert(result.error || 'Error al actualizar el gasto')
       }
@@ -122,7 +129,7 @@ export function useExpenseOperations(
   /**
    * Elimina un gasto
    */
-  const deleteExpense = async (expenseId: string) => {
+  const deleteExpense = async (expenseId: string, description: string = 'el gasto') => {
     if (!confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
       return
     }
@@ -132,6 +139,7 @@ export function useExpenseOperations(
 
       if (result.success) {
         onSuccess()
+        NotificationService.notifyExpenseDeleted(groupId, description, getMemberName(currentUserId))
       } else {
         alert(result.error || 'Error al eliminar el gasto')
       }

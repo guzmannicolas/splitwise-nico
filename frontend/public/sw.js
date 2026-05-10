@@ -153,7 +153,7 @@ self.addEventListener('pushsubscriptionchange', (event) => {
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(
         // Esta key debe coincidir con NEXT_PUBLIC_VAPID_PUBLIC_KEY
-        'BI3wC4nlOqsWlNW7OsFHMTythn820KQg-Ce6Yjk3UIx3FTtw74rnfh7Ez1lmnS4wZGNJD9eqJ9xCH5d8f4aXKe4'
+        'BFAOGI2-BotCYSh5RExX5zprIYbyaA8JPCZfpWmUxU_NPDMKsQASqkpSRS8WT6CwWD7McwRmQurd8U1Esgt-uM0'
       )
     })
     .then((subscription) => {

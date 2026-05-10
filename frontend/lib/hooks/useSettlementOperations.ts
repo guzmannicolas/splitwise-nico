@@ -1,8 +1,13 @@
 import { useState } from 'react'
 import { SettlementService } from '../services/SettlementService'
+import { NotificationService } from '../services/NotificationService'
+import type { Member } from '../services/types'
 
-export function useSettlementOperations(groupId: string, onSuccess?: () => void) {
+export function useSettlementOperations(groupId: string, onSuccess?: () => void, members: Member[] = []) {
   const [creating, setCreating] = useState(false)
+
+  const getMemberName = (userId: string) =>
+    members.find(m => m.user_id === userId)?.profiles?.full_name ?? 'Alguien'
 
   const createSettlement = async (fromUserId: string, toUserId: string, amount: number) => {
     setCreating(true)
@@ -21,6 +26,7 @@ export function useSettlementOperations(groupId: string, onSuccess?: () => void)
 
       alert('Liquidación registrada exitosamente')
       onSuccess?.()
+      NotificationService.notifySettlement(groupId, getMemberName(fromUserId), getMemberName(toUserId), amount)
     } catch (err) {
       console.error('Error creando liquidación:', err)
       alert('Error inesperado al registrar liquidación')
