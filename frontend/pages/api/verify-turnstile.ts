@@ -16,5 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   })
 
   const data = await response.json()
+  if (!data.success) {
+    console.error('[Turnstile] Verification failed:', data['error-codes'])
+  }
   return res.status(200).json({ success: data.success === true })
 }

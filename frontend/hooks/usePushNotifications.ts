@@ -22,10 +22,16 @@ export function usePushNotifications(): UsePushNotificationsReturn {
 
   // Verificar soporte de notificaciones
   useEffect(() => {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isIOSPWA = isIOS && (navigator as any).standalone === true;
+    const isIOSChrome = /CriOS/.test(navigator.userAgent);
+
     const supported =
       'Notification' in window &&
       'serviceWorker' in navigator &&
-      'PushManager' in window;
+      'PushManager' in window &&
+      (!isIOS || isIOSPWA) &&
+      !isIOSChrome;
 
     setIsSupported(supported);
 
@@ -43,7 +49,12 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Service Worker no disponible')), 8000)
+        ),
+      ]);
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (err) {
