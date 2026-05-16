@@ -247,7 +247,13 @@ export default function GroupDetail({
       refresh(true)
     } catch (err: any) {
       console.error('Error eliminando invitado:', err)
-      alert('No se pudo eliminar al invitado. Por favor intenta más tarde.')
+
+      // Mensaje específico si el usuario no tiene permisos
+      const message = err?.code === 'PGRST301' || err?.message?.includes('policy')
+        ? 'Solo el creador del grupo puede eliminar miembros'
+        : 'No se pudo eliminar al invitado. Por favor intenta más tarde.'
+
+      alert(message)
     }
   }
 
