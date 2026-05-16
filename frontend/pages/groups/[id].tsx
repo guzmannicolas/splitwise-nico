@@ -235,17 +235,19 @@ export default function GroupDetail({
   const handleRemoveGuest = async (userId: string) => {
     if (!groupId) return
     try {
-      // Al borrar el perfil, el CASCADE borra automáticamente la membresía en group_members
+      // Solo elimina de group_members, no de profiles
+      // Así el usuario puede seguir siendo referencia en expenses/settlements
       const { error } = await supabase
-        .from('profiles')
+        .from('group_members')
         .delete()
-        .eq('id', userId)
+        .eq('group_id', groupId)
+        .eq('user_id', userId)
 
       if (error) throw error
       refresh(true)
     } catch (err: any) {
       console.error('Error eliminando invitado:', err)
-      alert('No se pudo eliminar al invitado. Es probable que tenga gastos o deudas registradas a su nombre.')
+      alert('No se pudo eliminar al invitado. Por favor intenta más tarde.')
     }
   }
 
@@ -381,6 +383,7 @@ export default function GroupDetail({
               onCreate={createExpense}
               creating={creating}
               displayNameFor={displayNameFor}
+              currentUserId={currentUser?.id}
             />
 
             {/* Lista de gastos */}

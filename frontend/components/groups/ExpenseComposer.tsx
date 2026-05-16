@@ -15,13 +15,15 @@ interface ExpenseComposerProps {
   ) => Promise<void>
   creating: boolean
   displayNameFor: (userId: string) => string
+  currentUserId?: string
 }
 
 export default function ExpenseComposer({
   members,
   onCreate,
   creating,
-  displayNameFor
+  displayNameFor,
+  currentUserId
 }: ExpenseComposerProps) {
   const [showForm, setShowForm] = useState(false)
 
@@ -59,6 +61,7 @@ export default function ExpenseComposer({
             onCancel={() => setShowForm(false)}
             creating={creating}
             displayNameFor={displayNameFor}
+            currentUserId={currentUserId}
           />
         )}
       </AnimatePresence>
