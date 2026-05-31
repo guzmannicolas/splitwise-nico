@@ -105,7 +105,7 @@ export default function Layout({
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
               <Link href={user ? "/dashboard" : "/"} className="flex items-center text-blue-700 dark:text-blue-400 font-bold text-xl">
-                💸 Dividi2
+                 Dividi2
               </Link>
             </div>
             
