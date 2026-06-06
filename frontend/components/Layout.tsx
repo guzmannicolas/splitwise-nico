@@ -20,6 +20,7 @@ export default function Layout({
   const router = useRouter()
   const [loading, setLoading] = useState(!serverUser)
   const [displayName, setDisplayName] = useState<string>('')
+  const [isAdmin, setIsAdmin] = useState(false)
   const [menuOpen, setMenuOpen] = useState<boolean>(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const [showNavbar, setShowNavbar] = useState(true)
@@ -45,11 +46,12 @@ export default function Layout({
         if (!user) { setDisplayName(''); return }
         const { data, error } = await supabase
           .from('profiles')
-          .select('full_name')
+          .select('full_name, is_admin')
           .eq('id', user.id)
           .single()
         if (!error && data?.full_name) setDisplayName(data.full_name)
         else setDisplayName(user.email || 'Mi cuenta')
+        if (!error && data?.is_admin) setIsAdmin(true)
       } catch {
         setDisplayName(user?.email || 'Mi cuenta')
       }
@@ -146,6 +148,11 @@ export default function Layout({
                             <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Tu cuenta</Link>
                             <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Crear un grupo</Link>
                             <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline" title="Próximamente">Calculadoras</a>
+                            {isAdmin && (
+                              <Link href="/admin" className="block px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-medium no-underline">
+                                ⚙️ Panel Admin
+                              </Link>
+                            )}
                           </div>
                           <button
                             onClick={handleSignOut}
