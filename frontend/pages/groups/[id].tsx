@@ -108,13 +108,15 @@ export default function GroupDetail({
     groupId || '',
     memberIds,
     currentUser?.id || '',
-    () => refresh(true)
+    () => refresh(true),
+    members
   )
 
   // Hook para operaciones de liquidaciones
   const { createSettlement, deleteSettlement, creating: creatingSettlement } = useSettlementOperations(
     groupId || '',
-    () => refresh(true)
+    () => refresh(true),
+    members
   )
 
   // Hook para detalles de balances
@@ -229,35 +231,29 @@ export default function GroupDetail({
     }
   }
 
-  // Eliminar invitado
+  // Eliminar invitado (simplificado gracias a RLS y CASCADE)
   const handleRemoveGuest = async (userId: string) => {
     if (!groupId) return
     try {
-      // 1. Eliminar la membresía del grupo
-      const { error: memberError } = await supabase
+      // Solo elimina de group_members, no de profiles
+      // Así el usuario puede seguir siendo referencia en expenses/settlements
+      const { error } = await supabase
         .from('group_members')
         .delete()
         .eq('group_id', groupId)
         .eq('user_id', userId)
 
-      if (memberError) throw memberError
-
-      // 2. Eliminar el perfil de la tabla 'profiles' para no dejar registros huérfanos
-      // Solo lo hacemos si es un guest (email es null) para seguridad
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId)
-        .is('email', null)
-
-      if (profileError) {
-        console.warn('No se pudo eliminar el perfil (quizás está en otros grupos):', profileError)
-      }
-
+      if (error) throw error
       refresh(true)
     } catch (err: any) {
       console.error('Error eliminando invitado:', err)
-      alert('No se pudo eliminar al invitado. Es probable que tenga gastos o deudas registradas a su nombre.')
+
+      // Mensaje específico si el usuario no tiene permisos
+      const message = err?.code === 'PGRST301' || err?.message?.includes('policy')
+        ? 'Solo el creador del grupo puede eliminar miembros'
+        : 'No se pudo eliminar al invitado. Por favor intenta más tarde.'
+
+      alert(message)
     }
   }
 
@@ -393,6 +389,7 @@ export default function GroupDetail({
               onCreate={createExpense}
               creating={creating}
               displayNameFor={displayNameFor}
+              currentUserId={currentUser?.id}
             />
 
             {/* Lista de gastos */}

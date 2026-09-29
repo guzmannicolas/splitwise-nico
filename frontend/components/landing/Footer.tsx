@@ -10,7 +10,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="flex flex-col items-center md:items-start gap-4">
             <Link href="/" className="flex items-center text-blue-700 dark:text-blue-400 font-bold text-2xl tracking-tight">
-              💸 Dividi2
+               Dividi2
             </Link>
             <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs text-center md:text-left leading-relaxed">
               Gestiona gastos compartidos de forma simple, justa y 100% gratuita. Este sitio no usa cookies de rastreo ni analytics. Solo guardamos lo justo para que tu experiencia sea fluida.

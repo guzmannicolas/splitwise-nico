@@ -14,7 +14,7 @@ interface ExpenseListProps {
     splitType: SplitType,
     customSplits?: Record<string, string>
   ) => Promise<void>
-  onDelete: (expenseId: string) => Promise<void>
+  onDelete: (expenseId: string, description?: string) => Promise<void>
   displayNameFor: (userId: string) => string
   isRefreshing?: boolean
 }
@@ -182,7 +182,7 @@ export default function ExpenseList({
                   {expanded.has(expense.id) ? 'Ocultar' : 'Ver detalles'}
                 </button>
                 <button
-                  onClick={() => onDelete(expense.id)}
+                  onClick={() => onDelete(expense.id, expense.description)}
                   className="text-sm px-3 py-1 bg-red-200 dark:bg-red-900/30 text-red-800 dark:text-red-400 hover:bg-red-300 dark:hover:bg-red-900/50 rounded-lg transition-colors"
                   title="Eliminar gasto"
                 >

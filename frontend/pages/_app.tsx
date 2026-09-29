@@ -22,14 +22,14 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Splitwise Nico - Divide gastos con amigos y mantén las cuentas claras</title>
+        <title>Dividi2 - Divide gastos con amigos y mantén las cuentas claras</title>
         <meta name="description" content="Gestiona gastos compartidos de forma simple y efectiva" />
         
         {/* PWA Meta Tags */}
-        <meta name="application-name" content="Splitwise Nico" />
+        <meta name="application-name" content="Dividi2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Splitwise Nico" />
+        <meta name="apple-mobile-web-app-title" content="Dividi2" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#4F46E5" />
@@ -38,15 +38,15 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
         
         {/* Icons */}
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" href="/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:title" content="Splitwise Nico" />
+        <meta property="og:title" content="Dividi2" />
         <meta property="og:description" content="Gestiona gastos compartidos de forma simple y efectiva" />
-        <meta property="og:site_name" content="Splitwise Nico" />
+        <meta property="og:site_name" content="Dividi2" />
       </Head>
 
       <Script

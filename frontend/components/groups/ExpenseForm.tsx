@@ -15,6 +15,7 @@ interface ExpenseFormProps {
   onCancel: () => void
   creating: boolean
   displayNameFor: (userId: string) => string
+  currentUserId?: string
 }
 
 export default function ExpenseForm({
@@ -22,7 +23,8 @@ export default function ExpenseForm({
   onSubmit,
   onCancel,
   creating,
-  displayNameFor
+  displayNameFor,
+  currentUserId
 }: ExpenseFormProps) {
   const [description, setDescription] = useState('')
   const [amount, setAmount] = useState('')
@@ -30,6 +32,12 @@ export default function ExpenseForm({
   const [splitType, setSplitType] = useState<SplitType>('equal')
   const [customSplits, setCustomSplits] = useState<Record<string, string>>({})
   const [fullBeneficiaryId, setFullBeneficiaryId] = useState('')
+
+  useEffect(() => {
+    if (currentUserId && !paidBy) {
+      setPaidBy(currentUserId)
+    }
+  }, [currentUserId])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
