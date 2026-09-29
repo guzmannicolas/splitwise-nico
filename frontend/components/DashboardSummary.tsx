@@ -18,20 +18,28 @@ export default function DashboardSummary({ summary, loading }: Props) {
         <p className="text-gray-400 dark:text-slate-500">Sin datos de resumen</p>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-green-200 dark:border-green-900/30">
-              <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Te deben</p>
-              <p className="text-3xl font-extrabold text-green-600 dark:text-green-500 mt-2">${summary.owedToMe.toFixed(2)}</p>
+
+          <div className={`p-6 rounded-2xl shadow-md border flex flex-col md:flex-row items-center justify-between gap-4 ${
+            summary.net > 0 
+              ? 'bg-green-500/10 border-green-500/30 text-green-700 dark:text-green-400' 
+              : summary.net < 0 
+              ? 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-400' 
+              : 'bg-slate-500/10 border-slate-500/30 text-slate-700 dark:text-slate-300'
+          }`}>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider opacity-80">Balance General</p>
+              <h3 className="text-2xl font-extrabold mt-1">
+                {summary.net > 0 ? 'En total te deben' : summary.net < 0 ? 'En total debés' : 'Estás al día'}
+              </h3>
             </div>
-            <div className="p-6 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-red-200 dark:border-red-900/30">
-              <p className="text-sm font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wide">Debés</p>
-              <p className="text-3xl font-extrabold text-red-600 dark:text-red-500 mt-2">${summary.owedByMe.toFixed(2)}</p>
-            </div>
-            <div className="p-6 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-xl shadow-md text-white">
-              <p className="text-sm font-semibold uppercase tracking-wide">Neto</p>
-              <p className="text-3xl font-extrabold mt-2">${summary.net.toFixed(2)}</p>
+            <div className="text-4xl font-black">
+              {summary.net > 0 ? `+$${summary.net.toFixed(2)}` : summary.net < 0 ? `-$${Math.abs(summary.net).toFixed(2)}` : '$0.00'}
             </div>
           </div>
+
+
+
+
           {summary.byGroup.length > 0 && (
             <div className="mt-8">
               <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400 mb-3">Por grupo</h3>
@@ -50,11 +58,12 @@ export default function DashboardSummary({ summary, loading }: Props) {
                         <div className="mt-1 text-blue-500 dark:text-blue-400">👥</div>
                         <div>
                           <p className="text-lg font-semibold text-gray-900 dark:text-slate-100 leading-none">{g.group_name}</p>
-                          <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Te deben: ${g.owedToMe.toFixed(2)} · Debés: ${g.owedByMe.toFixed(2)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`text-lg font-extrabold ${g.net >= 0 ? 'text-green-600 dark:text-green-500' : 'text-red-600 dark:text-red-500'}`}>{g.net.toFixed(2)}</span>
+                        <span className={`text-lg font-extrabold ${g.net > 0 ? 'text-green-600 dark:text-green-500' : g.net < 0 ? 'text-red-600 dark:text-red-500' : 'text-gray-500'}`}>
+                          {g.net > 0 ? `+$${g.net.toFixed(2)}` : g.net < 0 ? `-$${Math.abs(g.net).toFixed(2)}` : '$0.00'}
+                        </span>
                         <span className="text-gray-400 group-hover:text-blue-500 transition-colors">➜</span>
                       </div>
                     </div>
