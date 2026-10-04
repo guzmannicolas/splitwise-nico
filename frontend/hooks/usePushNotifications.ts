@@ -29,7 +29,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   const [error, setError] = useState<string | null>(null);
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
-  // Verificar soporte de notificaciones
+  // Check notification support
   useEffect(() => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     const isIOSPWA = isIOS && (navigator as any).standalone === true;
@@ -49,7 +49,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
   }, []);
 
-  // Verificar si ya está suscrito (silencioso — el usuario no hizo nada todavía)
+  // Check if already subscribed (silent — the user has not done anything yet)
   const checkSubscription = useCallback(async () => {
     if (!user || !isSupported) {
       setIsLoading(false);
@@ -61,7 +61,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const subscription = await registration.pushManager.getSubscription();
       setIsSubscribed(!!subscription);
     } catch (err) {
-      // SW no listo al cargar la página — no mostrar error, el usuario no hizo nada
+      // SW not ready on page load — do not show an error, the user did nothing
       console.warn('[Push] SW not ready on initial check:', err);
     } finally {
       setIsLoading(false);
@@ -74,15 +74,15 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     }
   }, [user, isSupported, checkSubscription]);
 
-  // Suscribirse a push notifications
+  // Subscribe to push notifications
   const subscribe = useCallback(async () => {
     if (!user) {
-      setError('Debes iniciar sesión para suscribirte');
+      setError('You must be signed in to subscribe');
       return;
     }
 
     if (!isSupported) {
-      setError('Tu navegador no soporta notificaciones push');
+      setError('Your browser does not support push notifications');
       return;
     }
 
@@ -90,26 +90,26 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     setError(null);
 
     try {
-      // 1. Solicitar permiso
+      // 1. Request permission
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
 
       if (permissionResult !== 'granted') {
-        throw new Error('Permiso de notificaciones denegado');
+        throw new Error('Notification permission denied');
       }
 
-      // 2. Obtener el SW listo; si tarda demasiado, re-registrarlo explícitamente
+      // 2. Get the ready SW; if it takes too long, re-register it explicitly
       let registration: ServiceWorkerRegistration;
       try {
         registration = await waitForReadyRegistration(15000);
       } catch {
-        // Fallback: registrar el SW manualmente y esperar su activación
+        // Fallback: register the SW manually and wait for activation
         registration = await navigator.serviceWorker.register('/sw.js');
         const swToActivate = registration.installing || registration.waiting;
         if (swToActivate) {
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(
-              () => reject(new Error('El Service Worker no pudo activarse. Cerrá y reabrí la app e intentá de nuevo.')),
+              () => reject(new Error('The Service Worker could not activate. Close and reopen the app and try again.')),
               12000
             );
             swToActivate.addEventListener('statechange', (e: Event) => {
@@ -120,17 +120,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
             });
           });
         } else if (!registration.active) {
-          throw new Error('El Service Worker no está disponible. Cerrá y reabrí la app e intentá de nuevo.');
+          throw new Error('The Service Worker is not available. Close and reopen the app and try again.');
         }
       }
 
-      // Pausa breve para que iOS procese el permiso antes de suscribir
+      // Brief pause so iOS processes the permission before subscribing
       await new Promise(resolve => setTimeout(resolve, 300));
 
-      // 3. Suscribirse al push manager
+      // 3. Subscribe to the push manager
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidPublicKey) {
-        throw new Error('Configuración de notificaciones incompleta');
+        throw new Error('Notification configuration is incomplete');
       }
 
       const subscription = await registration.pushManager.subscribe({
@@ -138,7 +138,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
 
-      // 4. Guardar suscripción en la base de datos
+      // 4. Save subscription to the database
       const subscriptionJSON = subscription.toJSON();
 
       const { error: dbError } = await supabase
@@ -153,17 +153,17 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       if (dbError) throw dbError;
 
       setIsSubscribed(true);
-      console.log('[Push] Suscripción exitosa');
+      console.log('[Push] Subscription successful');
     } catch (err) {
-      console.error('[Push] Error al suscribirse:', err);
-      setError(err instanceof Error ? err.message : 'Error al suscribirse. Intentá de nuevo.');
+      console.error('[Push] Subscribe error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to subscribe. Please try again.');
       setIsSubscribed(false);
     } finally {
       setIsLoading(false);
     }
   }, [user, isSupported]);
 
-  // Desuscribirse de push notifications
+  // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
     if (!user) return;
 
@@ -175,15 +175,15 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       const subscription = await registration.pushManager.getSubscription();
 
       if (!subscription) {
-        console.log('No hay suscripción activa');
+        console.log('No active subscription found');
         setIsSubscribed(false);
         return;
       }
 
-      // 1. Desuscribirse del push manager
+      // 1. Unsubscribe from the push manager
       await subscription.unsubscribe();
 
-      // 2. Eliminar de la base de datos
+      // 2. Remove from the database
       const { error: dbError } = await supabase
         .from('push_subscriptions')
         .delete()
@@ -193,10 +193,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
       if (dbError) throw dbError;
 
       setIsSubscribed(false);
-      console.log('Desuscripción exitosa');
+      console.log('Unsubscribe successful');
     } catch (err) {
-      console.error('Error al desuscribirse:', err);
-      setError(err instanceof Error ? err.message : 'Error al desuscribirse');
+      console.error('Unsubscribe error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to unsubscribe');
     } finally {
       setIsLoading(false);
     }
@@ -213,7 +213,7 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   };
 }
 
-// Helper: Convierte VAPID key de base64 a Uint8Array
+// Helper: converts a VAPID key from base64 to Uint8Array
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');

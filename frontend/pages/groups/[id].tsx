@@ -20,9 +20,9 @@ import { GetServerSideProps } from 'next'
 import { requireAuth } from '../../lib/authGuard'
 
 /**
- * Página de detalle de grupo - REFACTORIZADA CON SOLID
- * Responsabilidad: Coordinar componentes y manejar navegación
- * Reducida de 1191 líneas a ~250 líneas
+ * Group detail page - refactored with SOLID
+ * Responsibility: coordinate components and handle navigation
+ * Reduced from 1191 lines to ~250 lines
  */
 
 interface GroupProps {
@@ -42,7 +42,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const { user, supabase } = result
   const groupId = context.params?.id as string
 
-  // Pre-fetch paralelo de datos básicos
+  // Parallel pre-fetch of basic data
   const [groupRes, membersRes, expensesRes, settlementsRes] = await Promise.all([
     supabase.from('groups').select('*').eq('id', groupId).single(),
     supabase.from('group_members').select('user_id, profiles(full_name, email)').eq('group_id', groupId),
@@ -54,7 +54,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     return { redirect: { destination: '/dashboard', permanent: false } }
   }
 
-  // Fetch de splits (basado en los gastos obtenidos)
+  // Fetch splits (based on the retrieved expenses)
   const expenseIds = expensesRes.data?.map(e => e.id) || []
   let splits: any[] = []
   if (expenseIds.length > 0) {
@@ -86,7 +86,7 @@ export default function GroupDetail({
   const { id } = router.query
   const groupId = typeof id === 'string' ? id : undefined
 
-  // Hook personalizado para datos del grupo - Actualizado para aceptar datos iniciales
+  // Custom hook for group data - updated to accept initial data
   const { group, members, expenses, splits, settlements, balances, loading, isRefreshing, error, refresh } = useGroup(groupId, {
     group: initialGroup,
     members: initialMembers,
@@ -95,14 +95,14 @@ export default function GroupDetail({
     settlements: initialSettlements,
   })
 
-  // Usuario actual
+  // Current user
   const [currentUser, setCurrentUser] = useState<{ id: string; email: string | null } | null>(null)
 
-  // UI estado
+  // UI state
   const [inviting, setInviting] = useState(false)
   const [showBalanceDetails, setShowBalanceDetails] = useState(false)
 
-  // Hook para operaciones de gastos
+  // Hook for expense operations
   const memberIds = members.map(m => m.user_id)
   const { createExpense, updateExpense, deleteExpense, creating } = useExpenseOperations(
     groupId || '',
@@ -112,14 +112,14 @@ export default function GroupDetail({
     members
   )
 
-  // Hook para operaciones de liquidaciones
+  // Hook for settlement operations
   const { createSettlement, deleteSettlement, creating: creatingSettlement } = useSettlementOperations(
     groupId || '',
     () => refresh(true),
     members
   )
 
-  // Hook para detalles de balances
+  // Hook for balance details
   const { allDetails, iOwe, oweMe } = useBalanceDetails(
     expenses,
     splits,
@@ -128,14 +128,14 @@ export default function GroupDetail({
     currentUser?.id || null
   )
 
-  // Obtener usuario actual
+  // Get current user
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setCurrentUser(user ? { id: user.id, email: user.email || null } : null)
     })
   }, [])
 
-  // Función helper para mostrar nombres
+  // Helper function to display names
   const displayNameFor = (userId: string): string => {
     const member = members.find(m => m.user_id === userId)
     if (member?.profiles?.full_name) return member.profiles.full_name
@@ -143,14 +143,14 @@ export default function GroupDetail({
     return userId.slice(0, 8)
   }
 
-  // Invitar miembro
+  // Invite member
   const handleInvite = async (email: string) => {
     if (!currentUser || !groupId) return
     setInviting(true)
     try {
       const cleanEmail = email.trim().toLowerCase()
 
-      // 1. Verificar si ya es miembro real
+      // 1. Check if already a real member
       const isAlreadyMember = members.some(m => {
         const memberEmail = m.profiles?.email?.toLowerCase().trim()
         const memberUserId = m.user_id?.toLowerCase().trim()
@@ -158,60 +158,60 @@ export default function GroupDetail({
       })
 
       if (isAlreadyMember) {
-        alert('Este usuario ya es miembro del grupo: ' + cleanEmail)
+        alert('This user is already a member of the group: ' + cleanEmail)
         return
       }
 
-      // 2. Verificar si ya hay una invitación pendiente en la BD
+      // 2. Check if there is already a pending invitation in the DB
       const { data: currentInvitations } = await GroupService.getGroupInvitations(groupId)
       const hasPending = currentInvitations?.some(inv =>
         inv.invited_email.toLowerCase().trim() === cleanEmail && inv.status === 'pending'
       )
 
       if (hasPending) {
-        alert('Ya existe una invitación pendiente para: ' + cleanEmail)
+        alert('A pending invitation already exists for: ' + cleanEmail)
         return
       }
 
       const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL as string) || (typeof window !== 'undefined' ? window.location.origin : '')
-      const invitedByName = members.find(m => m.user_id === currentUser.id)?.profiles?.full_name || currentUser.email || 'Alguien'
-      const groupName = group?.name || 'un grupo'
+      const invitedByName = members.find(m => m.user_id === currentUser.id)?.profiles?.full_name || currentUser.email || 'Someone'
+      const groupName = group?.name || 'a group'
 
       const invitationService = new InvitationService()
       const result = await invitationService.invite(groupId, cleanEmail, currentUser.id, siteUrl, invitedByName, groupName)
 
       if (!result.ok) {
-        // Manejar error de Supabase si por casualidad llega hasta aquí (ej. race condition)
+        // Handle Supabase error if it somehow reaches here (e.g. race condition)
         if (result.message.includes('unique constraint') || result.message.includes('duplicate key')) {
-          alert('Ya se ha enviado una invitación a esta dirección recientemente.')
+          alert('An invitation has already been sent to this address recently.')
         } else {
           alert(result.message)
         }
       } else if (result.emailSent) {
         alert(result.message)
       } else if (result.manualLink) {
-        alert(`${result.message}. Comparte este link:\n${result.manualLink}`)
+        alert(`${result.message}. Share this link:\n${result.manualLink}`)
       }
     } catch (err) {
       console.error(err)
-      alert('Error inesperado en la invitación')
+      alert('Unexpected error in the invitation')
     } finally {
       setInviting(false)
     }
   }
 
-  // Agregar invitado (guest user)
+  // Add guest user
   const handleAddGuest = async (fullName: string) => {
     if (!currentUser || !groupId) return
     const cleanName = fullName.trim()
 
-    // Verificar si ya existe alguien con ese nombre (miembro real o guest)
+    // Check if someone with that name already exists (real member or guest)
     const nameExists = members.some(m =>
       m.profiles?.full_name?.toLowerCase().trim() === cleanName.toLowerCase()
     )
 
     if (nameExists) {
-      alert(`Ya existe un miembro llamado "${cleanName}" en este grupo.`)
+      alert(`A member named "${cleanName}" already exists in this group.`)
       return
     }
 
@@ -223,20 +223,20 @@ export default function GroupDetail({
 
       if (error) throw error
 
-      alert(`Invitado "${cleanName}" agregado correctamente`)
+      alert(`Guest "${cleanName}" added successfully`)
       refresh(true)
     } catch (err: any) {
-      console.error('Error agregando invitado:', err)
-      alert('Error al agregar invitado: ' + (err?.message || String(err)))
+      console.error('Error adding guest:', err)
+      alert('Error adding guest: ' + (err?.message || String(err)))
     }
   }
 
-  // Eliminar invitado (simplificado gracias a RLS y CASCADE)
+  // Remove guest (simplified thanks to RLS and CASCADE)
   const handleRemoveGuest = async (userId: string) => {
     if (!groupId) return
     try {
-      // Solo elimina de group_members, no de profiles
-      // Así el usuario puede seguir siendo referencia en expenses/settlements
+      // Only remove from group_members, not from profiles
+      // The user can still be referenced in expenses/settlements
       const { error } = await supabase
         .from('group_members')
         .delete()
@@ -246,21 +246,21 @@ export default function GroupDetail({
       if (error) throw error
       refresh(true)
     } catch (err: any) {
-      console.error('Error eliminando invitado:', err)
+      console.error('Error removing guest:', err)
 
-      // Mensaje específico si el usuario no tiene permisos
+      // Specific message if the user lacks permissions
       const message = err?.code === 'PGRST301' || err?.message?.includes('policy')
-        ? 'Solo el creador del grupo puede eliminar miembros'
-        : 'No se pudo eliminar al invitado. Por favor intenta más tarde.'
+        ? 'Only the group creator can remove members'
+        : 'Could not remove the guest. Please try again later.'
 
       alert(message)
     }
   }
 
-  // Salir del grupo
+  // Leave the group
   const leaveGroup = async () => {
     if (!currentUser || !groupId) return
-    if (!confirm('¿Estás seguro de salir de este grupo? Esta acción no se puede deshacer.'))
+    if (!confirm('Are you sure you want to leave this group? This action cannot be undone.'))
       return
 
     try {
@@ -272,26 +272,26 @@ export default function GroupDetail({
 
       if (error) throw error
 
-      alert('Has salido del grupo')
+      alert('You have left the group')
       router.push('/dashboard')
     } catch (err: any) {
-      console.error('Error al salir del grupo', err)
-      alert('No se pudo salir: ' + (err?.message || String(err)))
+      console.error('Error leaving group', err)
+      alert('Could not leave: ' + (err?.message || String(err)))
     }
   }
 
-  // Eliminar grupo
+  // Delete group
   const deleteGroup = async () => {
     if (!currentUser || !group || !groupId) return
 
     if (group.created_by !== currentUser.id) {
-      alert('Solo el creador del grupo puede eliminarlo')
+      alert('Only the group creator can delete it')
       return
     }
 
     if (
       !confirm(
-        '¿Estás seguro de eliminar este grupo? Se eliminarán todos los gastos y liquidaciones. Esta acción no se puede deshacer.'
+        'Are you sure you want to delete this group? All expenses and settlements will be deleted. This action cannot be undone.'
       )
     )
       return
@@ -301,20 +301,20 @@ export default function GroupDetail({
 
       if (error) throw error
 
-      alert('Grupo eliminado')
+      alert('Group deleted')
       router.push('/dashboard')
     } catch (err: any) {
-      console.error('Error al eliminar grupo', err)
-      alert('No se pudo eliminar: ' + (err?.message || String(err)))
+      console.error('Error deleting group', err)
+      alert('Could not delete: ' + (err?.message || String(err)))
     }
   }
 
-  // Estados de carga y error
+  // Loading and error states
   if (loading) {
     return (
       <Layout>
         <div className="max-w-6xl mx-auto p-4">
-          <p className="text-center text-gray-500">Cargando grupo...</p>
+          <p className="text-center text-gray-500">Loading group...</p>
         </div>
       </Layout>
     )
@@ -329,7 +329,7 @@ export default function GroupDetail({
             onClick={() => router.push('/dashboard')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto block"
           >
-            Volver al Dashboard
+            Back to Dashboard
           </button>
         </div>
       </Layout>
@@ -340,12 +340,12 @@ export default function GroupDetail({
     return (
       <Layout>
         <div className="max-w-6xl mx-auto p-4">
-          <p className="text-center text-gray-500">Grupo no encontrado</p>
+          <p className="text-center text-gray-500">Group not found</p>
           <button
             onClick={() => router.push('/dashboard')}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mx-auto block"
           >
-            Volver al Dashboard
+            Back to Dashboard
           </button>
         </div>
       </Layout>
@@ -381,9 +381,9 @@ export default function GroupDetail({
             />
           </div>
 
-          {/* Columna derecha */}
+          {/* Right column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Botón y formulario de crear gasto */}
+            {/* Expense creation button and form */}
             <ExpenseComposer
               members={members}
               onCreate={createExpense}
@@ -392,7 +392,7 @@ export default function GroupDetail({
               currentUserId={currentUser?.id}
             />
 
-            {/* Lista de gastos */}
+            {/* Expense list */}
             <ExpenseList
               key={group?.id || 'expense-list'}
               expenses={expenses}
@@ -405,7 +405,7 @@ export default function GroupDetail({
               isRefreshing={isRefreshing}
             />
 
-            {/* Sección de liquidaciones */}
+            {/* Settlement section */}
             <SettlementSection
               balances={balances}
               settlements={settlements}

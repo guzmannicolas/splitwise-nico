@@ -1,12 +1,12 @@
 import type { Member, Expense, ExpenseSplit, Settlement, Balance } from './types'
 
 /**
- * Calculadora de balances
- * Responsabilidad única: Lógica de cálculo de deudas y balances
+ * Balance calculator
+ * Single responsibility: debt and balance calculation logic
  */
 export class BalanceCalculator {
   /**
-   * Calcula los balances de todos los miembros del grupo
+   * Calculates balances for all group members
    */
   static calculateBalances(
     members: Member[],
@@ -16,38 +16,38 @@ export class BalanceCalculator {
   ): Balance[] {
     const balanceMap = new Map<string, number>()
 
-    // Inicializar balances en 0
+    // Initialize balances at 0
     members.forEach(m => balanceMap.set(m.user_id, 0))
 
-    // Procesar gastos
+    // Process expenses
     expenses.forEach(expense => {
-      // Obtener splits del gasto
+      // Get splits for the expense
       const expenseSplits = splits.filter(s => s.expense_id === expense.id)
-      // El pagador solo debe recibir el monto que OTROS le deben (suma de splits)
-      // Antes se sumaba el monto completo del gasto, lo que inflaba su balance.
+      // The payer should only receive what OTHERS owe them (sum of splits)
+      // Previously the full expense amount was added, which inflated their balance.
       const totalOwedToPayer = expenseSplits.reduce((acc, s) => acc + s.amount, 0)
       const currentBalance = balanceMap.get(expense.paid_by) || 0
       balanceMap.set(expense.paid_by, currentBalance + totalOwedToPayer)
 
-      // Los deudores (beneficiarios distintos del pagador) restan su parte
+      // Debtors (beneficiaries other than the payer) subtract their share
       expenseSplits.forEach(split => {
         const userBalance = balanceMap.get(split.user_id) || 0
         balanceMap.set(split.user_id, userBalance - split.amount)
       })
     })
 
-    // Aplicar liquidaciones
+    // Apply settlements
     settlements.forEach(settlement => {
-      // El que pagó (from) aumenta su balance
+      // The payer (from) increases their balance
       const fromBalance = balanceMap.get(settlement.from_user_id) || 0
       balanceMap.set(settlement.from_user_id, fromBalance + settlement.amount)
 
-      // El que recibió (to) disminuye su balance
+      // The receiver (to) decreases their balance
       const toBalance = balanceMap.get(settlement.to_user_id) || 0
       balanceMap.set(settlement.to_user_id, toBalance - settlement.amount)
     })
 
-    // Convertir a array de Balance
+    // Convert to Balance array
     return members.map(m => ({
       user_id: m.user_id,
       name: m.profiles?.full_name || m.user_id.slice(0, 8),
@@ -56,8 +56,8 @@ export class BalanceCalculator {
   }
 
   /**
-   * Filtra liquidaciones relevantes para el cálculo
-   * Solo considera liquidaciones posteriores al gasto más antiguo
+   * Filters settlements relevant to the calculation
+   * Only considers settlements after the oldest expense
    */
   static filterRelevantSettlements(
     expenses: Expense[],
@@ -77,7 +77,7 @@ export class BalanceCalculator {
   }
 
   /**
-   * Calcula el balance individual de un usuario específico
+   * Calculates the individual balance of a specific user
    */
   static calculateUserBalance(
     userId: string,
@@ -87,24 +87,24 @@ export class BalanceCalculator {
   ): number {
     let balance = 0
 
-    // Sumar lo que pagó
+    // Add what was paid
     expenses.forEach(expense => {
       if (expense.paid_by === userId) {
-        // Usar sólo lo que otros miembros le deben (suma de splits del gasto)
+        // Use only what other members owe (sum of expense splits)
         const splitsForExpense = splits.filter(s => s.expense_id === expense.id)
         const totalOwedToPayer = splitsForExpense.reduce((acc, s) => acc + s.amount, 0)
         balance += totalOwedToPayer
       }
     })
 
-    // Restar lo que debe
+    // Subtract what is owed
     splits.forEach(split => {
       if (split.user_id === userId) {
         balance -= split.amount
       }
     })
 
-    // Aplicar liquidaciones
+    // Apply settlements
     settlements.forEach(settlement => {
       if (settlement.from_user_id === userId) {
         balance += settlement.amount
@@ -118,7 +118,7 @@ export class BalanceCalculator {
   }
 
   /**
-   * Identifica quién le debe a quién y cuánto
+   * Identifies who owes whom and how much
    */
   static calculateDebts(balances: Balance[]): Array<{
     from: string
@@ -126,12 +126,12 @@ export class BalanceCalculator {
     amount: number
   }> {
     const debts: Array<{ from: string; to: string; amount: number }> = []
-    
-    // Separar deudores y acreedores
+
+    // Separate debtors and creditors
     const debtors = balances.filter(b => b.balance < -0.01).map(b => ({ ...b }))
     const creditors = balances.filter(b => b.balance > 0.01).map(b => ({ ...b }))
 
-    // Algoritmo simple de matching
+    // Simple matching algorithm
     let i = 0, j = 0
     while (i < debtors.length && j < creditors.length) {
       const debt = Math.abs(debtors[i].balance)

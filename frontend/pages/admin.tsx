@@ -87,10 +87,10 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-slate-100">
-              Panel de Administración
+              Administration Panel
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-              Vista general del sistema · datos al momento de cargar
+              System overview · data as of page load
             </p>
           </div>
           <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-3 py-1 text-sm font-semibold text-indigo-700 dark:text-indigo-300">
@@ -101,40 +101,40 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
         {/* Stat cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4">
           <StatCard
-            icon="👥" label="Usuarios"
+            icon="👥" label="Users"
             value={stats.totalUsers}
-            subValue={`${stats.activeUsers} activos últimos 30d`}
+            subValue={`${stats.activeUsers} active last 30d`}
             bg="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
           />
           <StatCard
-            icon="🏘️" label="Grupos"
+            icon="🏘️" label="Groups"
             value={stats.totalGroups}
             bg="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
           />
           <StatCard
-            icon="💰" label="Gastos"
+            icon="💰" label="Expenses"
             value={stats.totalExpenses}
             subValue={fmt(stats.totalExpenseAmount) + ' total'}
             bg="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
           />
           <StatCard
-            icon="✅" label="Liquidaciones"
+            icon="✅" label="Settlements"
             value={stats.totalSettlements}
             subValue={fmt(stats.totalSettlementAmount) + ' total'}
             bg="bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300"
           />
           <StatCard
-            icon="⚡" label="Activos 30d"
+            icon="⚡" label="Active 30d"
             value={stats.activeUsers}
             bg="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
           />
           <StatCard
-            icon="🔔" label="Push suscritos"
+            icon="🔔" label="Push subscribers"
             value={stats.pushSubs}
             bg="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300"
           />
           <StatCard
-            icon="✉️" label="Invitaciones pend."
+            icon="✉️" label="Pending invites"
             value={stats.pendingInvites}
             bg="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300"
           />
@@ -146,22 +146,22 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
           {/* Recent users */}
           <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-              <h2 className="font-bold text-gray-900 dark:text-slate-100">Últimos usuarios registrados</h2>
+              <h2 className="font-bold text-gray-900 dark:text-slate-100">Recently registered users</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 dark:divide-slate-800">
                 <thead>
                   <tr className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                    <th className="px-6 py-3 text-left font-semibold">Nombre</th>
+                    <th className="px-6 py-3 text-left font-semibold">Name</th>
                     <th className="px-6 py-3 text-left font-semibold">Email</th>
-                    <th className="px-6 py-3 text-left font-semibold">Fecha</th>
+                    <th className="px-6 py-3 text-left font-semibold">Date</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                   {recentUsers.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-6 py-4 text-sm text-gray-400 dark:text-slate-500 text-center">
-                        Sin usuarios
+                        No users
                       </td>
                     </tr>
                   ) : recentUsers.map((u) => (
@@ -185,15 +185,15 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
           {/* Top groups */}
           <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-              <h2 className="font-bold text-gray-900 dark:text-slate-100">Grupos más activos</h2>
+              <h2 className="font-bold text-gray-900 dark:text-slate-100">Most active groups</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100 dark:divide-slate-800">
                 <thead>
                   <tr className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                    <th className="px-6 py-3 text-left font-semibold">Grupo</th>
-                    <th className="px-6 py-3 text-center font-semibold">Miembros</th>
-                    <th className="px-6 py-3 text-center font-semibold">Gastos</th>
+                    <th className="px-6 py-3 text-left font-semibold">Group</th>
+                    <th className="px-6 py-3 text-center font-semibold">Members</th>
+                    <th className="px-6 py-3 text-center font-semibold">Expenses</th>
                     <th className="px-6 py-3 text-right font-semibold">Total</th>
                   </tr>
                 </thead>
@@ -201,7 +201,7 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
                   {topGroups.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-6 py-4 text-sm text-gray-400 dark:text-slate-500 text-center">
-                        Sin grupos
+                        No groups
                       </td>
                     </tr>
                   ) : topGroups.map((g) => (
@@ -229,25 +229,25 @@ export default function AdminPage({ user, stats, recentUsers, topGroups, recentA
         {/* Recent activity */}
         <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl border border-gray-200 dark:border-slate-800 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
-            <h2 className="font-bold text-gray-900 dark:text-slate-100">Actividad reciente</h2>
-            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Últimos 10 gastos registrados en toda la app</p>
+            <h2 className="font-bold text-gray-900 dark:text-slate-100">Recent activity</h2>
+            <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Last 10 expenses recorded across the app</p>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-100 dark:divide-slate-800">
               <thead>
                 <tr className="text-xs text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                  <th className="px-6 py-3 text-left font-semibold">Descripción</th>
-                  <th className="px-6 py-3 text-left font-semibold">Grupo</th>
-                  <th className="px-6 py-3 text-left font-semibold">Pagó</th>
-                  <th className="px-6 py-3 text-right font-semibold">Monto</th>
-                  <th className="px-6 py-3 text-right font-semibold">Fecha</th>
+                  <th className="px-6 py-3 text-left font-semibold">Description</th>
+                  <th className="px-6 py-3 text-left font-semibold">Group</th>
+                  <th className="px-6 py-3 text-left font-semibold">Paid by</th>
+                  <th className="px-6 py-3 text-right font-semibold">Amount</th>
+                  <th className="px-6 py-3 text-right font-semibold">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                 {recentActivity.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-6 py-4 text-sm text-gray-400 dark:text-slate-500 text-center">
-                      Sin actividad
+                      No activity
                     </td>
                   </tr>
                 ) : recentActivity.map((a) => (

@@ -9,25 +9,25 @@ export default function BottomNav() {
 
   const navItems = [
     {
-      label: 'Inicio',
+      label: 'Home',
       icon: '🏠',
       href: '/dashboard?view=summary',
       active: pathname === '/dashboard' && currentView === 'summary'
     },
     {
-      label: 'Grupos',
+      label: 'Groups',
       icon: '👥',
       href: '/dashboard?view=groups',
       active: pathname === '/dashboard' && currentView === 'groups'
     },
     {
-      label: 'Gastos',
+      label: 'Expenses',
       icon: '📝',
       href: '/dashboard?view=expenses',
       active: pathname === '/dashboard' && currentView === 'expenses'
     },
     {
-      label: 'Perfil',
+      label: 'Profile',
       icon: '👤',
       href: '/profile',
       active: pathname === '/profile'

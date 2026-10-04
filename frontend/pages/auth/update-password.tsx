@@ -20,8 +20,8 @@ export default function UpdatePassword() {
 
       if (error) throw error
       
-      setMessage('Contraseña actualizada correctamente')
-      // Redirigir al login después de 2 segundos
+      setMessage('Password updated successfully')
+      // Redirect to login after 2 seconds
       setTimeout(() => router.push('/auth/login'), 2000)
     } catch (error) {
       setMessage('Error: ' + (error instanceof Error ? error.message : String(error)))
@@ -30,7 +30,7 @@ export default function UpdatePassword() {
     }
   }
 
-  // Verificar que el usuario tenga un token válido
+  // Verify the user has a valid token
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -47,9 +47,9 @@ export default function UpdatePassword() {
         <div className="max-w-md w-full bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md p-8 transition-all">
           <div>
             <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 text-center mb-2">
-              Actualizar contraseña
+              Update password
             </h2>
-            <p className="text-center text-gray-500 dark:text-slate-400 mb-6">Ingresa tu nueva contraseña</p>
+            <p className="text-center text-gray-500 dark:text-slate-400 mb-6">Enter your new password</p>
           </div>
           <form className="space-y-6" onSubmit={handleUpdatePassword}>
             <div className="relative">
@@ -59,14 +59,14 @@ export default function UpdatePassword() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors transition-colors"
-                placeholder="Nueva contraseña"
+                placeholder="New password"
                 minLength={6}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none"
-                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -97,7 +97,7 @@ export default function UpdatePassword() {
                 disabled={loading}
                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? 'Actualizando...' : 'Actualizar contraseña'}
+                {loading ? 'Updating...' : 'Update password'}
               </button>
             </div>
           </form>

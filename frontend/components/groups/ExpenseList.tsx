@@ -20,8 +20,8 @@ interface ExpenseListProps {
 }
 
 /**
- * Componente para mostrar la lista de gastos
- * Responsabilidad única: Visualización y edición de gastos
+ * Component for displaying the expense list
+ * Single responsibility: expense visualisation and editing
  */
 export default function ExpenseList({
   expenses,
@@ -42,7 +42,7 @@ export default function ExpenseList({
   const [editSplitType, setEditSplitType] = useState<SplitType>('equal')
   const [editCustomSplits, setEditCustomSplits] = useState<Record<string, string>>({})
   
-  // Paginación de gastos
+  // Expense pagination
   const [visibleCount, setVisibleCount] = useState(6)
   const showMore = () => setVisibleCount(prev => prev + 6)
   const showAll = () => setVisibleCount(expenses.length)
@@ -81,11 +81,11 @@ export default function ExpenseList({
     e.preventDefault()
     const amount = parseFloat(editAmount)
     if (isNaN(amount) || amount <= 0) {
-      alert('Monto inválido')
+      alert('Invalid amount')
       return
     }
     if (!editPaidBy) {
-      alert('Selecciona quién pagó')
+      alert('Select who paid')
       return
     }
 
@@ -102,10 +102,10 @@ export default function ExpenseList({
           className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 cursor-pointer flex items-center justify-between hover:text-blue-800 dark:hover:text-indigo-300 transition-colors"
           onClick={() => setIsExpanded(!isExpanded)}
         >
-          <span>Gastos</span>
+          <span>Expenses</span>
           <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
         </h2>
-        {isExpanded && <p className="text-gray-500 dark:text-slate-400 text-center">No hay gastos todavía</p>}
+        {isExpanded && <p className="text-gray-500 dark:text-slate-400 text-center">No expenses yet</p>}
       </div>
     )
   }
@@ -120,14 +120,14 @@ export default function ExpenseList({
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-3">
-          <span>Gastos</span>
+          <span>Expenses</span>
           <span className="text-sm font-normal text-gray-500 dark:text-slate-400">
-            ({expenses.length} en total)
+            ({expenses.length} total)
           </span>
           {isRefreshing && (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-              <span className="ml-2 text-xs font-normal text-blue-500 hidden sm:inline">Actualizando...</span>
+              <span className="ml-2 text-xs font-normal text-blue-500 hidden sm:inline">Updating...</span>
             </div>
           )}
         </span>
@@ -144,22 +144,22 @@ export default function ExpenseList({
               <div className="flex-1">
                 <p className="font-bold text-lg text-gray-800 dark:text-slate-100">{expense.description}</p>
                 <p className="text-sm text-gray-600 dark:text-slate-400 mt-1">
-                  Pagado por{' '}
+                  Paid by{' '}
                   <span className="font-semibold text-gray-900 dark:text-slate-200">
                     {expense.profiles?.full_name ||
                       (currentUserId && expense.paid_by === currentUserId
-                        ? 'Tú'
+                        ? 'You'
                         : shortId(expense.paid_by))}
                   </span>
                 </p>
                 <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
-                  Creado por {displayNameFor(expense.created_by || expense.paid_by)} el{' '}
+                  Created by {displayNameFor(expense.created_by || expense.paid_by)} on{' '}
                   {new Date(expense.created_at).toLocaleDateString()}
                 </p>
                 {expense.updated_at && expense.updated_by && (
                   <p className="text-xs text-gray-400 dark:text-slate-600 italic mt-1">
-                    Última modificación por {displayNameFor(expense.updated_by)} el{' '}
-                    {new Date(expense.updated_at).toLocaleDateString()} a las{' '}
+                    Last edited by {displayNameFor(expense.updated_by)} on{' '}
+                    {new Date(expense.updated_at).toLocaleDateString()} at{' '}
                     {new Date(expense.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 )}
@@ -179,7 +179,7 @@ export default function ExpenseList({
                   onClick={() => toggleExpand(expense.id)}
                   className="text-sm px-3 py-1 bg-indigo-200 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-300 dark:hover:bg-indigo-900/50 rounded-lg transition-colors font-semibold"
                 >
-                  {expanded.has(expense.id) ? 'Ocultar' : 'Ver detalles'}
+                  {expanded.has(expense.id) ? 'Hide' : 'View details'}
                 </button>
                 <button
                   onClick={() => onDelete(expense.id, expense.description)}
@@ -203,7 +203,7 @@ export default function ExpenseList({
                     value={editDesc}
                     onChange={e => setEditDesc(e.target.value)}
                     className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
-                    placeholder="Descripción"
+                    placeholder="Description"
                     required
                   />
                   <input
@@ -212,7 +212,7 @@ export default function ExpenseList({
                     value={editAmount}
                     onChange={e => setEditAmount(e.target.value)}
                     className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
-                    placeholder="Monto"
+                    placeholder="Amount"
                     required
                   />
                   <select
@@ -220,7 +220,7 @@ export default function ExpenseList({
                     onChange={e => setEditPaidBy(e.target.value)}
                     className="p-2 border rounded bg-white dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100"
                   >
-                    <option value="">¿Quién pagó?</option>
+                    <option value="">Who paid?</option>
                     {members.map(m => (
                       <option key={m.user_id} value={m.user_id}>
                         {displayNameFor(m.user_id)}
@@ -238,7 +238,7 @@ export default function ExpenseList({
                         checked={editSplitType === 'equal'}
                         onChange={() => setEditSplitType('equal')}
                       />
-                      Igualitario
+                      Equal
                     </label>
                     <label className="flex items-center gap-1">
                       <input
@@ -248,7 +248,7 @@ export default function ExpenseList({
                         checked={editSplitType === 'full'}
                         onChange={() => setEditSplitType('full')}
                       />
-                      Full al pagador
+                      Full to payer
                     </label>
                     <label className="flex items-center gap-1">
                       <input
@@ -258,7 +258,7 @@ export default function ExpenseList({
                         checked={editSplitType === 'custom'}
                         onChange={() => setEditSplitType('custom')}
                       />
-                      Personalizado
+                      Custom
                     </label>
                   </div>
                   {editSplitType === 'custom' && (
@@ -292,14 +292,14 @@ export default function ExpenseList({
                     type="submit"
                     className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-bold transition-all shadow-md"
                   >
-                    Guardar
+                    Save
                   </button>
                   <button
                     type="button"
                     onClick={cancelEdit}
                     className="flex-1 px-4 py-2 bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-slate-100 rounded-lg hover:bg-gray-300 dark:hover:bg-slate-600 transition-colors"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                 </div>
               </form>
@@ -309,7 +309,7 @@ export default function ExpenseList({
             {expanded.has(expense.id) && (
               <div className="mt-3 bg-white/50 dark:bg-slate-900/30 rounded-xl p-4 border border-blue-100 dark:border-slate-700 transition-all">
                 <p className="text-sm font-bold text-gray-700 dark:text-slate-200 mb-3 flex items-center gap-2">
-                   <span>📊</span> División de este gasto
+                   <span>📊</span> Expense split
                 </p>
                 <ul className="space-y-2">
                   {members.map(m => {
@@ -325,7 +325,7 @@ export default function ExpenseList({
                       >
                         <span className="text-gray-700 dark:text-slate-300">{name}</span>
                         <span className={`font-semibold ${amount > 0.01 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-slate-500'}`}>
-                          {amount > 0.01 ? `debe $${amount.toFixed(2)}` : '(no debe)'}
+                          {amount > 0.01 ? `owes $${amount.toFixed(2)}` : '(nothing owed)'}
                         </span>
                       </li>
                     )
@@ -342,13 +342,13 @@ export default function ExpenseList({
               onClick={showMore}
               className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold rounded-xl border border-blue-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all shadow-sm"
             >
-              Ver más (6 más)
+              Show more (6 more)
             </button>
             <button
               onClick={showAll}
               className="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md"
             >
-              Ver todos ({expenses.length})
+              Show all ({expenses.length})
             </button>
           </div>
         )}

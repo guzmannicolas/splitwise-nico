@@ -4,14 +4,14 @@ import Link from 'next/link'
 export default function Contact() {
   return (
     <section className="py-24 bg-blue-600 dark:bg-indigo-950 transition-colors duration-500 overflow-hidden relative">
-      {/* Decoración de fondo */}
+      {/* Background decoration */}
       <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="bg-white/10 backdrop-blur-md rounded-3xl p-12 lg:p-20 text-center border border-white/20">
-          <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6">¿Tienes alguna duda o quieres contribuir?</h2>
+          <h2 className="text-3xl lg:text-5xl font-extrabold text-white mb-6">Have a question or want to contribute?</h2>
           <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto leading-relaxed">
-            Este es un proyecto abierto. Si quieres reportar un error, proponer una mejora o simplemente saludar, me encantaría escucharte.
+            This is an open project. If you want to report a bug, suggest an improvement, or just say hello, I would love to hear from you.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link 
@@ -27,7 +27,7 @@ export default function Contact() {
               className="px-10 py-4 bg-blue-700 dark:bg-slate-900 border border-white/30 text-white font-bold rounded-2xl hover:scale-105 transition-all shadow-xl flex items-center justify-center gap-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-              Enviar Email
+              Send Email
             </Link>
           </div>
         </div>

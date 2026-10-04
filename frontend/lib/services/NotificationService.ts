@@ -1,8 +1,8 @@
 import { supabase } from '../supabaseClient';
 
 /**
- * Servicio para enviar notificaciones push a través de Edge Function
- * Responsabilidad única: Comunicación con send-push-notification
+ * Service for sending push notifications via Edge Function
+ * Single responsibility: communication with send-push-notification
  */
 
 export interface NotificationPayload {
@@ -22,9 +22,9 @@ export interface SendNotificationOptions {
 
 export class NotificationService {
   /**
-   * Envía notificación push a través de Edge Function
-   * @param options - Configuración de la notificación
-   * @returns Promise con resultado del envío
+   * Sends a push notification via Edge Function
+   * @param options - Notification configuration
+   * @returns Promise with the send result
    */
   static async sendPushNotification(
     options: SendNotificationOptions
@@ -32,12 +32,12 @@ export class NotificationService {
     try {
       const { groupId, targetUserId, payload } = options;
 
-      // Validar que al menos uno de los targets esté presente
+      // At least one target must be provided
       if (!groupId && !targetUserId) {
-        throw new Error('Debe especificar groupId o targetUserId');
+        throw new Error('Must specify groupId or targetUserId');
       }
 
-      // Llamar a la Edge Function
+      // Call the Edge Function
       const { data, error } = await supabase.functions.invoke('send-push-notification', {
         body: {
           ...payload,
@@ -47,10 +47,10 @@ export class NotificationService {
       });
 
       if (error) {
-        console.error('Error enviando notificación:', error);
+        console.error('Error sending notification:', error);
         return {
           success: false,
-          error: error.message || 'Error al enviar notificación',
+          error: error.message || 'Failed to send notification',
         };
       }
 
@@ -59,16 +59,16 @@ export class NotificationService {
         sent: data?.sent || 0,
       };
     } catch (err) {
-      console.error('Error en sendPushNotification:', err);
+      console.error('Error in sendPushNotification:', err);
       return {
         success: false,
-        error: err instanceof Error ? err.message : 'Error desconocido',
+        error: err instanceof Error ? err.message : 'Unknown error',
       };
     }
   }
 
   /**
-   * Envía notificación cuando se crea un nuevo gasto
+   * Sends a notification when a new expense is created
    */
   static async notifyNewExpense(
     groupId: string,
@@ -79,8 +79,8 @@ export class NotificationService {
     await this.sendPushNotification({
       groupId,
       payload: {
-        title: '💸 Nuevo gasto registrado',
-        body: `${paidByName} agregó "${expenseDescription}" ($${amount.toFixed(2)})`,
+        title: '💸 New expense recorded',
+        body: `${paidByName} added "${expenseDescription}" ($${amount.toFixed(2)})`,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
         tag: `expense-${groupId}`,
@@ -93,7 +93,7 @@ export class NotificationService {
   }
 
   /**
-   * Envía notificación cuando se registra una liquidación
+   * Sends a notification when a settlement is recorded
    */
   static async notifySettlement(
     groupId: string,
@@ -104,8 +104,8 @@ export class NotificationService {
     await this.sendPushNotification({
       groupId,
       payload: {
-        title: '✅ Liquidación registrada',
-        body: `${fromUserName} pagó $${amount.toFixed(2)} a ${toUserName}`,
+        title: '✅ Settlement recorded',
+        body: `${fromUserName} paid $${amount.toFixed(2)} to ${toUserName}`,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
         tag: `settlement-${groupId}`,
@@ -118,7 +118,7 @@ export class NotificationService {
   }
 
   /**
-   * Envía notificación cuando alguien es invitado a un grupo
+   * Sends a notification when someone is invited to a group
    */
   static async notifyInvitation(
     targetUserId: string,
@@ -128,8 +128,8 @@ export class NotificationService {
     await this.sendPushNotification({
       targetUserId,
       payload: {
-        title: '🎉 Nueva invitación',
-        body: `${invitedByName} te invitó a unirte a "${groupName}"`,
+        title: '🎉 New invitation',
+        body: `${invitedByName} invited you to join "${groupName}"`,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
         tag: 'invitation',
@@ -141,7 +141,7 @@ export class NotificationService {
   }
 
   /**
-   * Envía notificación cuando se modifica un gasto
+   * Sends a notification when an expense is updated
    */
   static async notifyExpenseUpdated(
     groupId: string,
@@ -151,8 +151,8 @@ export class NotificationService {
     await this.sendPushNotification({
       groupId,
       payload: {
-        title: '📝 Gasto modificado',
-        body: `${updatedByName} actualizó "${expenseDescription}"`,
+        title: '📝 Expense updated',
+        body: `${updatedByName} updated "${expenseDescription}"`,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
         tag: `expense-update-${groupId}`,
@@ -165,7 +165,7 @@ export class NotificationService {
   }
 
   /**
-   * Envía notificación cuando se elimina un gasto
+   * Sends a notification when an expense is deleted
    */
   static async notifyExpenseDeleted(
     groupId: string,
@@ -175,8 +175,8 @@ export class NotificationService {
     await this.sendPushNotification({
       groupId,
       payload: {
-        title: '🗑️ Gasto eliminado',
-        body: `${deletedByName} eliminó "${expenseDescription}"`,
+        title: '🗑️ Expense deleted',
+        body: `${deletedByName} deleted "${expenseDescription}"`,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
         tag: `expense-delete-${groupId}`,

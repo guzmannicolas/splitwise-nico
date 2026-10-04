@@ -36,12 +36,12 @@ export default function SettlementSection({
 
     const parsedAmount = parseFloat(amount)
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
-      alert('Monto inválido')
+      alert('Invalid amount')
       return
     }
 
     if (fromUserId === toUserId) {
-      alert('El pagador y receptor no pueden ser la misma persona')
+      alert('Payer and recipient cannot be the same person')
       return
     }
 
@@ -52,7 +52,7 @@ export default function SettlementSection({
     setShowForm(false)
   }
 
-  // Encontrar quién le debe a quién (simplificado)
+  // Find who owes whom (simplified)
   const suggestions = balances
     .filter(b => b.balance < 0)
     .map(b => {
@@ -69,7 +69,7 @@ export default function SettlementSection({
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-3">
-          <span>Liquidaciones</span>
+          <span>Settlements</span>
           {isRefreshing && (
             <div className="flex items-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-600"></div>
@@ -85,39 +85,39 @@ export default function SettlementSection({
       {/* Sugerencias */}
       {suggestions.length > 0 && (
         <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-900/30 rounded-lg">
-          <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-400 mb-2">💡 Sugerencias para saldar:</p>
+          <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-400 mb-2">💡 Suggestions to settle up:</p>
           {suggestions.slice(0, 2).map((sug, idx) => (
             <p key={idx} className="text-sm text-yellow-700 dark:text-yellow-300">
-              {displayNameFor(sug!.from)} debería pagar ${sug!.amount.toFixed(2)} a {displayNameFor(sug!.to)}
+              {displayNameFor(sug!.from)} should pay ${sug!.amount.toFixed(2)} to {displayNameFor(sug!.to)}
             </p>
           ))}
         </div>
       )}
 
-      {/* Botón para mostrar formulario */}
+      {/* Button to show form */}
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
           className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold rounded-xl hover:from-purple-700 hover:to-pink-600 transition-all shadow-md mb-4"
         >
-          + Registrar Pago
+          + Record Payment
         </button>
       )}
 
       {/* Formulario */}
       {showForm && (
         <form onSubmit={handleSubmit} className="mb-6 p-4 bg-purple-50 dark:bg-slate-800 rounded-xl border border-purple-200 dark:border-slate-700 transition-all duration-300">
-          <h3 className="font-semibold text-purple-800 dark:text-purple-400 mb-3">Registrar pago realizado</h3>
+          <h3 className="font-semibold text-purple-800 dark:text-purple-400 mb-3">Record a payment</h3>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Quién pagó:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Who paid:</label>
               <select
                 value={fromUserId}
                 onChange={e => setFromUserId(e.target.value)}
                 className="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-300 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                 required
               >
-                <option value="">Seleccionar miembro</option>
+                <option value="">Select member</option>
                 {members.map(m => (
                   <option key={m.user_id} value={m.user_id}>
                     {displayNameFor(m.user_id)}
@@ -126,14 +126,14 @@ export default function SettlementSection({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Le pagó a:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Paid to:</label>
               <select
                 value={toUserId}
                 onChange={e => setToUserId(e.target.value)}
                 className="w-full p-2 border border-gray-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-purple-300 bg-white dark:bg-slate-700 text-gray-900 dark:text-slate-100"
                 required
               >
-                <option value="">Seleccionar miembro</option>
+                <option value="">Select member</option>
                 {members
                   .filter(m => m.user_id !== fromUserId)
                   .map(m => (
@@ -144,7 +144,7 @@ export default function SettlementSection({
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Monto:</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Amount:</label>
               <input
                 type="number"
                 step="0.01"
@@ -162,7 +162,7 @@ export default function SettlementSection({
                 disabled={creating}
                 className="flex-1 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-all shadow-md"
               >
-                {creating ? 'Guardando...' : 'Registrar'}
+                {creating ? 'Saving...' : 'Record'}
               </button>
               <button
                 type="button"
@@ -174,7 +174,7 @@ export default function SettlementSection({
                 }}
                 className="flex-1 py-2 bg-gray-300 dark:bg-slate-700 text-gray-700 dark:text-slate-200 font-semibold rounded-lg hover:bg-gray-400 dark:hover:bg-slate-600 transition-colors"
               >
-                Cancelar
+                Cancel
               </button>
             </div>
           </div>
@@ -183,9 +183,9 @@ export default function SettlementSection({
 
       {/* Lista de liquidaciones recientes */}
       <div className="mt-2">
-        <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-3">Historial de pagos</h3>
+        <h3 className="text-lg font-semibold text-gray-700 dark:text-slate-200 mb-3">Payment history</h3>
         {settlements.length === 0 ? (
-          <p className="text-gray-400 dark:text-slate-500 text-center py-4 italic">No hay liquidaciones registradas</p>
+          <p className="text-gray-400 dark:text-slate-500 text-center py-4 italic">No settlements recorded</p>
         ) : (
           <ul className="divide-y divide-gray-200 dark:divide-slate-800">
             {settlements
@@ -208,12 +208,12 @@ export default function SettlementSection({
                     {currentUserId && (
                       <button
                         onClick={() => {
-                          if (confirm('¿Eliminar este pago? Se registrará en auditoría.')) {
+                          if (confirm('Delete this payment? It will be recorded in the audit log.')) {
                             onDeleteSettlement(s.id)
                           }
                         }}
                         className="text-red-400 hover:text-red-600 dark:text-red-500/50 dark:hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                        title="Eliminar pago (soft delete)"
+                        title="Delete payment (soft delete)"
                       >
                         ✕
                       </button>

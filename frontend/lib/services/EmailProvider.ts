@@ -16,7 +16,7 @@ export interface EmailProvider {
   sendInvitation(payload: EmailPayload): Promise<EmailProviderResult>
 }
 
-// Implementación que usa Supabase Edge Function 'send-invitation-email'
+// Implementation using Supabase Edge Function 'send-invitation-email'
 import { supabase } from '../supabaseClient'
 
 export class SupabaseEdgeEmailProvider implements EmailProvider {

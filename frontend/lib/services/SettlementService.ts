@@ -3,12 +3,12 @@ import type { Settlement } from './types'
 import { createSettlementSchema, validateSchema } from '../validation/schemas'
 
 /**
- * Servicio para manejar liquidaciones de deudas
- * Responsabilidad única: CRUD de settlements
+ * Service for managing debt settlements
+ * Single responsibility: CRUD for settlements
  */
 export class SettlementService {
   /**
-   * Obtiene todas las liquidaciones de un grupo
+   * Gets all settlements for a group
    */
   static async getGroupSettlements(groupId: string): Promise<{ data: Settlement[] | null; error: any }> {
     try {
@@ -20,13 +20,13 @@ export class SettlementService {
 
       return { data: data as any, error }
     } catch (error) {
-      console.warn('La tabla settlements no existe o hay un error:', error)
+      console.warn('The settlements table does not exist or there is an error:', error)
       return { data: [], error: null }
     }
   }
 
   /**
-   * Crea una nueva liquidación
+   * Creates a new settlement
    */
   static async createSettlement(
     groupId: string,
@@ -34,7 +34,7 @@ export class SettlementService {
     toUserId: string,
     amount: number
   ): Promise<{ success: boolean; error?: string }> {
-    // Validar con Zod
+    // Validate with Zod
     const validation = validateSchema(createSettlementSchema, {
       group_id: groupId,
       from_user_id: fromUserId,
@@ -63,7 +63,7 @@ export class SettlementService {
   }
 
   /**
-   * Elimina una liquidación (DELETE real)
+   * Deletes a settlement (hard DELETE)
    */
   static async deleteSettlement(settlementId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase

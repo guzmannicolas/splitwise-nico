@@ -13,39 +13,39 @@ export class InvitationService {
   private emailProvider = new SupabaseEdgeEmailProvider()
 
   async invite(groupId: string, email: string, invitedByUserId: string, siteUrl: string, inviterDisplayName?: string, groupName?: string): Promise<InvitationResult> {
-    // 0. Validar datos con Zod
+    // 0. Validate with Zod
     const validation = validateSchema(inviteSchema, { email, group_id: groupId, invited_by: invitedByUserId })
     if (!validation.success) {
       return { ok: false, message: validation.errors.join(', ') }
     }
 
-    // 1. Crear registro de invitación en BD
+    // 1. Create invitation record in DB
     const { data: invitation, error } = await GroupService.inviteMember(groupId, validation.data.email, invitedByUserId)
     if (error) {
-      return { ok: false, message: 'Error al crear invitación: ' + (error.message || 'Desconocido') }
+      return { ok: false, message: 'Failed to create invitation: ' + (error.message || 'Unknown') }
     }
 
     const token: string | undefined = invitation?.token
     if (!token) {
-      return { ok: false, message: 'Invitación creada sin token. Revisa trigger/generación.' }
+      return { ok: false, message: 'Invitation created without token. Check trigger/generation.' }
     }
 
-    // 2. Construir payload email
+    // 2. Build email payload
     const payload = {
       invitedEmail: email,
-      invitedByName: inviterDisplayName || 'Alguien',
-      groupName: groupName || 'un grupo',
+      invitedByName: inviterDisplayName || 'Someone',
+      groupName: groupName || 'a group',
       token,
       siteUrl,
     }
 
-    // 3. Enviar email
+    // 3. Send email
     const result = await this.emailProvider.sendInvitation(payload)
     if (!result.success) {
       const manualLink = `${siteUrl}/accept-invite?token=${token}`
-      return { ok: true, message: 'Invitación creada, pero fallo envío de email', manualLink, emailSent: false }
+      return { ok: true, message: 'Invitation created, but email delivery failed', manualLink, emailSent: false }
     }
 
-    return { ok: true, message: 'Invitación enviada correctamente', emailSent: true }
+    return { ok: true, message: 'Invitation sent successfully', emailSent: true }
   }
 }

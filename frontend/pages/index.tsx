@@ -12,8 +12,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   const redirect = await redirectIfAuthed(context)
   if (redirect) return redirect
 
-  // Aquí podríamos hacer fetch de datos públicos en el futuro
-  // como "Total de usuarios", "Gastos procesados", etc.
+  // Here we could fetch public data in the future
+  // e.g. "Total users", "Expenses processed", etc.
   return { props: {} }
 }
 

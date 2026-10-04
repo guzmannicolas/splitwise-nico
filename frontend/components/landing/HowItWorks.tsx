@@ -3,20 +3,20 @@ import React from 'react'
 const steps = [
   {
     number: '01',
-    title: 'Crea tu cuenta',
-    description: 'Regístrate en segundos con tu email. Es totalmente gratis y seguro.',
+    title: 'Create your account',
+    description: 'Sign up in seconds with your email. It is completely free and secure.',
     icon: '👤'
   },
   {
     number: '02',
-    title: 'Arma tus grupos',
-    description: 'Crea grupos para tus viajes, cenas o gastos compartidos en casa.',
+    title: 'Set up your groups',
+    description: 'Create groups for your trips, dinners, or shared household expenses.',
     icon: '👥'
   },
   {
     number: '03',
-    title: 'Divide y liquida',
-    description: 'Añade gastos y deja que Dividi2 calcule quién debe a quién automáticamente.',
+    title: 'Split and settle',
+    description: 'Add expenses and let Dividi2 automatically calculate who owes whom.',
     icon: '💰'
   }
 ]
@@ -26,14 +26,14 @@ export default function HowItWorks() {
     <section className="py-24 bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-20">
-          <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3">Funcionamiento</h2>
-          <p className="text-3xl lg:text-5xl font-extrabold text-slate-900 dark:text-white">Divide gastos en 3 pasos.</p>
+          <h2 className="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3">How it works</h2>
+          <p className="text-3xl lg:text-5xl font-extrabold text-slate-900 dark:text-white">Split expenses in 3 steps.</p>
         </div>
 
         <div className="relative">
-          {/* Línea conectora decorativa (solo en desktop) */}
+          {/* Decorative connector line (desktop only) */}
           <div className="hidden lg:block absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 dark:bg-slate-800 -translate-y-1/2 z-0"></div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
             {steps.map((step, idx) => (
               <div key={idx} className="flex flex-col items-center text-center">

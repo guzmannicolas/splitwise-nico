@@ -3,8 +3,8 @@ import { BalanceDetailService } from '../services/BalanceDetailService'
 import type { Expense, ExpenseSplit, Settlement, Member, DebtDetail } from '../services/types'
 
 /**
- * Hook para calcular y gestionar detalles de deudas
- * Responsabilidad: encapsular lógica de cálculo y filtrado
+ * Hook for computing and managing debt details
+ * Responsibility: encapsulate calculation and filtering logic
  */
 export function useBalanceDetails(
   expenses: Expense[],
@@ -13,12 +13,12 @@ export function useBalanceDetails(
   members: Member[],
   currentUserId: string | null
 ) {
-  // Calcular detalles completos (memoizado para evitar recálculos)
+  // Compute full details (memoized to avoid unnecessary recalculations)
   const allDetails = useMemo(() => {
     return BalanceDetailService.calculateDebtDetails(expenses, splits, settlements, members)
   }, [expenses, splits, settlements, members])
 
-  // Filtrar deudas del usuario actual
+  // Filter debts for the current user
   const userDetails = useMemo(() => {
     if (!currentUserId) return { iOwe: [], oweMe: [] }
     return BalanceDetailService.filterByUser(allDetails, currentUserId)
@@ -28,9 +28,9 @@ export function useBalanceDetails(
   const oweMe = userDetails.oweMe || []
 
   return {
-    allDetails,      // Todas las deudas del grupo
-    iOwe,            // Lo que yo debo
-    oweMe,           // Lo que me deben
+    allDetails,      // All debts in the group
+    iOwe,            // What I owe
+    oweMe,           // What others owe me
     hasDebts: iOwe.length > 0 || oweMe.length > 0
   }
 }

@@ -1,17 +1,17 @@
 import type { Expense, ExpenseSplit, Settlement, Member, DebtDetail } from './types'
 
 /**
- * Servicio para calcular detalles de deudas persona-a-persona
- * Responsabilidad única: transformar expenses + splits + settlements en relaciones de deuda netas
+ * Service for calculating person-to-person debt details
+ * Single responsibility: transform expenses + splits + settlements into net debt relationships
  */
 export class BalanceDetailService {
   /**
-   * Calcula las deudas detalladas entre pares de usuarios
-   * @param expenses - Lista de gastos del grupo
-   * @param splits - Lista de todos los splits
-   * @param settlements - Lista de liquidaciones realizadas
-   * @param members - Miembros del grupo para obtener nombres
-   * @returns Array de deudas detalladas con nombres incluidos
+   * Calculates detailed debts between pairs of users
+   * @param expenses - List of group expenses
+   * @param splits - List of all splits
+   * @param settlements - List of recorded settlements
+   * @param members - Group members for name lookup
+   * @returns Array of detailed debts with names included
    */
   static calculateDebtDetails(
     expenses: Expense[],
@@ -19,18 +19,18 @@ export class BalanceDetailService {
     settlements: Settlement[],
     members: Member[]
   ): DebtDetail[] {
-    // Mapa auxiliar para nombres
+    // Auxiliary map for names
     const nameMap = new Map<string, string>()
     members.forEach(m => {
       nameMap.set(m.user_id, m.profiles?.full_name || m.user_id.slice(0, 8))
     })
 
-    // Mapa de gastos para acceso rápido
+    // Expense map for fast lookup
     const expenseMap = new Map<string, Expense>()
     expenses.forEach(exp => expenseMap.set(exp.id, exp))
 
-    // 1. Acumular deudas desde expense_splits
-    // Estructura: Map<"deudor->acreedor", amount>
+    // 1. Accumulate debts from expense_splits
+    // Structure: Map<"debtor->creditor", amount>
     const debtMatrix = new Map<string, number>()
 
     splits.forEach(split => {
@@ -40,7 +40,7 @@ export class BalanceDetailService {
       const debtor = split.user_id
       const creditor = expense.paid_by
 
-      // El deudor le debe al pagador
+      // The debtor owes the payer
       if (debtor !== creditor) {
         const key = `${debtor}->${creditor}`
         const current = debtMatrix.get(key) || 0
@@ -48,15 +48,15 @@ export class BalanceDetailService {
       }
     })
 
-    // 2. Restar liquidaciones (settlements) de las deudas acumuladas
+    // 2. Subtract settlements from accumulated debts
     settlements.forEach(settlement => {
       const key = `${settlement.from_user_id}->${settlement.to_user_id}`
       const current = debtMatrix.get(key) || 0
       debtMatrix.set(key, current - settlement.amount)
     })
 
-    // 3. Netear deudas bilaterales: si A->B y B->A existen, mostrar sólo el neto
-    // pairNet almacena el neto en el orden [minId|maxId]
+    // 3. Net bilateral debts: if A->B and B->A both exist, show only the net
+    // pairNet stores the net in [minId|maxId] order
     const pairNet = new Map<string, { a: string; b: string; net: number }>()
     debtMatrix.forEach((amount, key) => {
       if (Math.abs(amount) < 0.01) return
@@ -64,7 +64,7 @@ export class BalanceDetailService {
       const [minId, maxId] = [from, to].sort()
       const pKey = `${minId}|${maxId}`
       const rec = pairNet.get(pKey) || { a: minId, b: maxId, net: 0 }
-      // Si la dirección coincide con min->max sumamos, si es al revés restamos
+      // If direction matches min->max add, if reversed subtract
       const delta = from === minId ? amount : -amount
       rec.net += delta
       pairNet.set(pKey, rec)
@@ -74,7 +74,7 @@ export class BalanceDetailService {
     pairNet.forEach(({ a, b, net }) => {
       const rounded = Math.round(net * 100) / 100
       if (Math.abs(rounded) < 0.01) return
-      // net > 0 significa a->b; net < 0 significa b->a
+      // net > 0 means a->b; net < 0 means b->a
       const from_user_id = rounded > 0 ? a : b
       const to_user_id = rounded > 0 ? b : a
       const amount = Math.abs(rounded)
@@ -87,17 +87,17 @@ export class BalanceDetailService {
       })
     })
 
-    // 4. Ordenar: primero los montos más altos
+    // 4. Sort: highest amounts first
     details.sort((a, b) => b.amount - a.amount)
 
     return details
   }
 
   /**
-   * Filtra deudas relevantes para un usuario específico
-   * @param details - Detalles completos de deudas
-   * @param userId - Usuario a filtrar
-   * @returns Objeto con deudas que el usuario debe y deudas a su favor
+   * Filters debts relevant to a specific user
+   * @param details - Full debt details
+   * @param userId - User to filter by
+   * @returns Object with debts the user owes and debts in their favour
    */
   static filterByUser(details: DebtDetail[], userId: string) {
     const iOwe = details.filter(d => d.from_user_id === userId && d.amount > 0)

@@ -1,4 +1,4 @@
-// Tipos compartidos para los servicios
+// Shared types for the services
 export interface Group {
   id: string
   name: string
@@ -50,12 +50,12 @@ export interface Settlement {
 export interface Balance {
   user_id: string
   name: string
-  balance: number // positivo = le deben, negativo = debe
+  balance: number // positive = owed to user, negative = user owes
 }
 
 export interface DebtDetail {
-  from_user_id: string // quien debe
-  to_user_id: string // a quien le debe
+  from_user_id: string // who owes
+  to_user_id: string // who is owed
   amount: number
   debtor_name: string
   creditor_name: string
@@ -71,8 +71,8 @@ export interface CreateExpenseData {
   splitType: SplitType
   customSplits?: Record<string, number>
   memberIds: string[]
-  fullBeneficiaryId?: string // Para splitType 'full': quién debe el total
-  created_by: string // Usuario que crea el gasto
+  fullBeneficiaryId?: string // For splitType 'full': who owes the full amount
+  created_by: string // User creating the expense
 }
 
 export interface UpdateExpenseData {
@@ -83,5 +83,5 @@ export interface UpdateExpenseData {
   customSplits?: Record<string, number>
   memberIds: string[]
   fullBeneficiaryId?: string
-  updated_by: string // Usuario que modifica el gasto
+  updated_by: string // User updating the expense
 }

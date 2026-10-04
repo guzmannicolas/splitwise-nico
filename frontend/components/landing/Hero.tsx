@@ -4,7 +4,7 @@ import Link from 'next/link'
 export default function Hero() {
   return (
     <section className="relative w-full pt-10 pb-20 lg:pt-16 lg:pb-32 overflow-hidden bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-200 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 transition-colors duration-500">
-      {/* Elementos decorativos de fondo */}
+      {/* Background decorative elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute top-1/2 -right-24 w-80 h-80 bg-indigo-400/20 dark:bg-indigo-600/10 rounded-full blur-3xl animate-pulse delay-700"></div>
@@ -14,38 +14,38 @@ export default function Hero() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="text-center lg:text-left">
             <h1 className="text-5xl lg:text-7xl font-extrabold text-blue-700 dark:text-blue-400 tracking-tight leading-tight mb-6">
-              Organiza gastos,<br />
-              <span className="text-slate-900 dark:text-white">disfruta el momento.</span>
+              Organize expenses,<br />
+              <span className="text-slate-900 dark:text-white">enjoy the moment.</span>
             </h1>
             <p className="text-lg lg:text-xl text-slate-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto lg:mx-0">
-              Dividi2 es la plataforma gratuita y de código abierto para repartir gastos con amigos de forma simple, justa y sin complicaciones.
+              Dividi2 is the free, open-source platform for splitting expenses with friends — simple, fair, and hassle-free.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link 
                 href="/auth/register" 
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-2xl shadow-lg hover:shadow-blue-500/30 hover:scale-105 transition-all duration-300 text-center text-lg"
               >
-                Empezar ahora
+                Get started
               </Link>
-              <Link 
-                href="#" 
+              <Link
+                href="#"
                 target="_blank"
                 className="px-8 py-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-700 dark:text-slate-200 font-bold rounded-2xl border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:scale-105 transition-all duration-300 text-center text-lg"
               >
-                Ver en GitHub
+                View on GitHub
               </Link>
             </div>
             <div className="mt-8 flex items-center justify-center lg:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
-              <span className="flex items-center gap-1">✅ 100% Gratis</span>
-              <span className="flex items-center gap-1">🛡️ Privacidad total</span>
-              <span className="flex items-center gap-1">🌍 Código Abierto</span>
+              <span className="flex items-center gap-1">✅ 100% Free</span>
+              <span className="flex items-center gap-1">🛡️ Full privacy</span>
+              <span className="flex items-center gap-1">🌍 Open Source</span>
             </div>
           </div>
           
           <div className="relative group lg:mt-0 mt-12">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
             <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800">
-              {/* Mockup simplificado de la interfaz */}
+              {/* Simplified interface mockup */}
               <div className="p-4 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-400"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-400"></div>

@@ -18,13 +18,13 @@ export default function GroupsPanel({ groups, loading, summary, onCreateGroup }:
   return (
     <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-800">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Tus grupos</h2>
+        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400">Your groups</h2>
         {onCreateGroup && (
           <button
             onClick={onCreateGroup}
             className="px-4 py-2 bg-green-600 dark:bg-green-700 text-white font-semibold rounded-lg hover:bg-green-700 dark:hover:bg-green-800 transition-colors shadow-md"
           >
-            ➕ Crear Grupo
+            ➕ Create Group
           </button>
         )}
       </div>
@@ -59,7 +59,7 @@ export default function GroupsPanel({ groups, loading, summary, onCreateGroup }:
           ))}
         </div>
       ) : (
-        <p className="text-gray-400 dark:text-slate-500 text-center py-8">No hay grupos todavía</p>
+        <p className="text-gray-400 dark:text-slate-500 text-center py-8">No groups yet</p>
       )}
     </div>
   )

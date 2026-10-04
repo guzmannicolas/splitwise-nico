@@ -2,8 +2,8 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { type GetServerSidePropsContext } from 'next'
 
 /**
- * Crea un cliente de Supabase para ser usado en el servidor (getServerSideProps)
- * Maneja la lectura y escritura de sesiones a través de cookies.
+ * Creates a Supabase client for use on the server (getServerSideProps)
+ * Handles reading and writing sessions via cookies.
  */
 export function createSupabaseServerClient(context: GetServerSidePropsContext) {
   return createServerClient(

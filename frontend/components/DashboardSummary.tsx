@@ -11,11 +11,11 @@ export default function DashboardSummary({ summary, loading }: Props) {
   const router = useRouter()
   return (
     <div className="bg-gradient-to-br from-white to-blue-50 dark:from-slate-900 dark:to-slate-800 shadow-xl rounded-2xl p-6 border border-blue-100 dark:border-slate-700">
-      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6">Resumen General</h2>
+      <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6">Overview</h2>
       {loading ? (
-        <p className="text-gray-500 dark:text-slate-400">Cargando resumen...</p>
+        <p className="text-gray-500 dark:text-slate-400">Loading summary...</p>
       ) : !summary ? (
-        <p className="text-gray-400 dark:text-slate-500">Sin datos de resumen</p>
+        <p className="text-gray-400 dark:text-slate-500">No summary data</p>
       ) : (
         <>
 
@@ -27,9 +27,9 @@ export default function DashboardSummary({ summary, loading }: Props) {
               : 'bg-slate-500/10 border-slate-500/30 text-slate-700 dark:text-slate-300'
           }`}>
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wider opacity-80">Balance General</p>
+              <p className="text-sm font-semibold uppercase tracking-wider opacity-80">Overall Balance</p>
               <h3 className="text-2xl font-extrabold mt-1">
-                {summary.net > 0 ? 'En total te deben' : summary.net < 0 ? 'En total debés' : 'Estás al día'}
+                {summary.net > 0 ? 'You are owed in total' : summary.net < 0 ? 'You owe in total' : 'You are settled up'}
               </h3>
             </div>
             <div className="text-4xl font-black">
@@ -42,7 +42,7 @@ export default function DashboardSummary({ summary, loading }: Props) {
 
           {summary.byGroup.length > 0 && (
             <div className="mt-8">
-              <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400 mb-3">Por grupo</h3>
+              <h3 className="text-xl font-bold text-blue-700 dark:text-blue-400 mb-3">By group</h3>
               <ul className="grid grid-cols-1 gap-3">
                 {summary.byGroup.map(g => (
                   <li key={g.group_id}>

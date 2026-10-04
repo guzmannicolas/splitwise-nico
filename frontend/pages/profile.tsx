@@ -57,10 +57,10 @@ export default function Profile() {
 
       if (error) throw error
 
-      alert('Perfil actualizado correctamente')
+      alert('Profile updated successfully')
     } catch (error: any) {
       console.error('Error saving profile:', error)
-      let msg = 'Error desconocido';
+      let msg = 'Unknown error';
       if (error && typeof error === 'object') {
         if (error.message) msg = error.message;
         else if (error.details) msg = error.details;
@@ -68,7 +68,7 @@ export default function Profile() {
       } else {
         msg = String(error);
       }
-      alert('Error al guardar: ' + msg)
+      alert('Error saving: ' + msg)
     } finally {
       setSaving(false)
     }
@@ -88,8 +88,8 @@ export default function Profile() {
     <Layout>
       <div className="flex items-center justify-center min-h-[80vh] py-8 px-2">
         <div className="w-full max-w-lg bg-white/90 dark:bg-slate-800/90 shadow-xl rounded-2xl p-8 border border-blue-100 dark:border-slate-700 backdrop-blur-md">
-          <h1 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-2 text-center tracking-tight">Mi Perfil</h1>
-          <p className="text-center text-gray-500 dark:text-slate-400 mb-8">Gestiona tu información personal</p>
+          <h1 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-2 text-center tracking-tight">My Profile</h1>
+          <p className="text-center text-gray-500 dark:text-slate-400 mb-8">Manage your personal information</p>
           <form onSubmit={saveProfile} className="space-y-7">
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Email</label>
@@ -99,19 +99,19 @@ export default function Profile() {
                 disabled
                 className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-gray-100 dark:bg-slate-700 text-gray-500 dark:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">El email no se puede cambiar</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Email cannot be changed</p>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Nombre para mostrar</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Display name</label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Ej: Bruno Guzmán"
+                placeholder="E.g. Bruno Guzman"
                 className="w-full p-3 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800"
                 required
               />
-              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">Este nombre se mostrará en los grupos y gastos</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">This name will appear in groups and expenses</p>
             </div>
             <button
               type="submit"
@@ -120,9 +120,10 @@ export default function Profile() {
             >
               {saving ? (
                 <span className="flex items-center justify-center"><svg className="animate-spin h-5 w-5 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>Guardando...</span>
-              ) : 'Guardar Cambios'}
+              ) : 'Save Changes'}
             </button>
           </form>
+
         </div>
       </div>
     </Layout>

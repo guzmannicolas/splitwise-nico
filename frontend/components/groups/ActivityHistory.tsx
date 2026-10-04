@@ -14,7 +14,7 @@ type Props = {
 export default function ActivityHistory({ expenses, settlements, displayNameFor }: Props) {
   const [isExpanded, setIsExpanded] = useState(true)
 
-  // Combinar gastos y liquidaciones en timeline
+  // Merge expenses and settlements into a timeline
   const activities: ActivityItem[] = [
     ...expenses.map(e => ({ type: 'expense' as const, data: e, timestamp: e.created_at })),
     ...settlements.map(s => ({ type: 'settlement' as const, data: s, timestamp: s.created_at }))
@@ -31,9 +31,9 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <span className="flex items-center gap-3">
-          <span>Actividad Reciente</span>
+          <span>Recent Activity</span>
           <span className="text-sm font-normal text-gray-500 dark:text-slate-400">
-            ({activities.length} en total)
+            ({activities.length} total)
           </span>
         </span>
         <span className="text-xl">{isExpanded ? '▼' : '▶'}</span>
@@ -42,7 +42,7 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
   <>
       
       {activities.length === 0 ? (
-        <p className="text-gray-400 dark:text-slate-500 text-center py-8 italic">No hay actividad aún</p>
+        <p className="text-gray-400 dark:text-slate-500 text-center py-8 italic">No activity yet</p>
       ) : (
         <div className="space-y-6">
           <ul className="space-y-3">
@@ -58,18 +58,18 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
                 {item.type === 'expense' ? (
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Gasto</span>
+                      <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Expense</span>
                       <span className="font-bold text-blue-700 dark:text-blue-300">${item.data.amount.toFixed(2)}</span>
                     </div>
                     <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">{item.data.description}</p>
                     <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                      Pagado por {displayNameFor(item.data.paid_by)} · {new Date(item.timestamp).toLocaleString()}
+                      Paid by {displayNameFor(item.data.paid_by)} · {new Date(item.timestamp).toLocaleString()}
                     </p>
                   </div>
                 ) : (
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Pago</span>
+                      <span className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Payment</span>
                       <span className="font-bold text-purple-700 dark:text-purple-300">${item.data.amount.toFixed(2)}</span>
                     </div>
                     <p className="font-medium text-gray-800 dark:text-slate-100 mt-1">
@@ -90,13 +90,13 @@ export default function ActivityHistory({ expenses, settlements, displayNameFor 
                 onClick={showMore}
                 className="flex-1 py-3 px-4 bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 font-bold rounded-xl border border-blue-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 transition-all shadow-sm"
               >
-                Ver más (6 más)
+                Show more (6 more)
               </button>
               <button
                 onClick={showAll}
                 className="flex-1 py-3 px-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md"
               >
-                Ver todos ({activities.length})
+                Show all ({activities.length})
               </button>
             </div>
           )}

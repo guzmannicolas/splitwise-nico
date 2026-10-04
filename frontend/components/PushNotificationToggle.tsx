@@ -22,7 +22,7 @@ export default function PushNotificationToggle() {
     }
   };
 
-  // Si no es soportado, no mostrar el componente
+  // If not supported, do not render the component
   if (!isSupported) {
     return null;
   }
@@ -35,12 +35,12 @@ export default function PushNotificationToggle() {
             <span className="text-2xl">🔔</span>
             <div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100">
-                Notificaciones Push
+                Push Notifications
               </h3>
               <p className="text-sm text-gray-500 dark:text-slate-400">
                 {isSubscribed
-                  ? 'Recibirás notificaciones de gastos y liquidaciones'
-                  : 'Activa para recibir notificaciones en tiempo real'}
+                  ? 'You will receive notifications for expenses and settlements'
+                  : 'Enable to receive real-time notifications'}
               </p>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function PushNotificationToggle() {
         </button>
       </div>
 
-      {/* Estado del permiso */}
+      {/* Permission status */}
       {permission === 'denied' && (
         <div className="mt-4 rounded-md bg-red-50 dark:bg-red-900/10 p-4 border border-red-100 dark:border-red-900/20">
           <div className="flex">
@@ -75,16 +75,16 @@ export default function PushNotificationToggle() {
             </div>
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
-                Permiso denegado
+                Permission denied
               </h3>
               <div className="mt-2 text-sm text-red-700 dark:text-red-300">
                 <p>
-                  Has bloqueado las notificaciones. Para activarlas:
+                  You have blocked notifications. To enable them:
                 </p>
                 <ol className="mt-2 ml-4 list-decimal">
-                  <li>Haz clic en el ícono de candado en la barra de dirección</li>
-                  <li>Busca "Notificaciones" y selecciona "Permitir"</li>
-                  <li>Recarga la página</li>
+                  <li>Click the lock icon in the address bar</li>
+                  <li>Find &quot;Notifications&quot; and select &quot;Allow&quot;</li>
+                  <li>Reload the page</li>
                 </ol>
               </div>
             </div>
@@ -113,48 +113,48 @@ export default function PushNotificationToggle() {
       {isLoading && (
         <div className="mt-4 flex items-center justify-center py-2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
-          <span className="ml-2 text-sm text-gray-500 dark:text-slate-400">Procesando...</span>
+          <span className="ml-2 text-sm text-gray-500 dark:text-slate-400">Processing...</span>
         </div>
       )}
 
-      {/* Detalles expandibles */}
+      {/* Expandable details */}
       {isSubscribed && (
         <div className="mt-4">
           <button
             onClick={() => setShowDetails(!showDetails)}
             className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
           >
-            {showDetails ? '▼ Ocultar detalles' : '▶ Ver detalles'}
+            {showDetails ? '▼ Hide details' : '▶ Show details'}
           </button>
 
           {showDetails && (
             <div className="mt-3 text-sm text-gray-600 dark:text-slate-300 space-y-2 transition-all">
               <p className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900 dark:text-slate-100">Estado:</span>
+                <span className="font-semibold text-gray-900 dark:text-slate-100">Status:</span>
                 <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900/30 px-2.5 py-0.5 text-xs font-medium text-green-800 dark:text-green-400">
-                  Activo
+                  Active
                 </span>
               </p>
               <p>
-                <span className="font-semibold text-gray-900 dark:text-slate-100">Recibirás notificaciones cuando:</span>
+                <span className="font-semibold text-gray-900 dark:text-slate-100">You will receive notifications when:</span>
               </p>
               <ul className="ml-4 list-disc space-y-1">
-                <li>Se agregue un nuevo gasto a tus grupos</li>
-                <li>Alguien registre una liquidación</li>
-                <li>Te inviten a un nuevo grupo</li>
-                <li>Se modifique un gasto existente</li>
+                <li>A new expense is added to your groups</li>
+                <li>Someone records a settlement</li>
+                <li>You are invited to a new group</li>
+                <li>An existing expense is modified</li>
               </ul>
             </div>
           )}
         </div>
       )}
 
-      {/* Información adicional para no suscritos */}
+      {/* Additional info for non-subscribers */}
       {!isSubscribed && permission !== 'denied' && !isLoading && (
         <div className="mt-4 text-sm text-gray-500 dark:text-slate-400">
           <p className="flex items-center gap-2">
             <span>💡</span>
-            <span>Las notificaciones funcionan incluso cuando la app está cerrada</span>
+            <span>Notifications work even when the app is closed</span>
           </p>
         </div>
       )}

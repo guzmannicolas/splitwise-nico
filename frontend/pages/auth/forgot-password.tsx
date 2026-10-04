@@ -16,7 +16,7 @@ export default function ForgotPassword() {
     setMessage(null)
 
     if (!turnstileToken) {
-      setMessage('Completá la verificación de seguridad')
+      setMessage('Please complete the security verification')
       return
     }
 
@@ -24,7 +24,7 @@ export default function ForgotPassword() {
     try {
       const valid = await verifyTurnstile(turnstileToken)
       if (!valid) {
-        setMessage('Error: Verificación de seguridad fallida, intentá de nuevo')
+        setMessage('Error: Security verification failed, please try again')
         turnstileRef.current?.reset()
         setTurnstileToken(null)
         return
@@ -35,7 +35,7 @@ export default function ForgotPassword() {
       })
 
       if (error) throw error
-      setMessage('Revisa tu email para restablecer tu contraseña')
+      setMessage('Check your email to reset your password')
     } catch (error) {
       setMessage('Error: ' + (error instanceof Error ? error.message : String(error)))
       turnstileRef.current?.reset()
@@ -51,9 +51,9 @@ export default function ForgotPassword() {
         <div className="max-w-md w-full bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md p-8 transition-all">
           <div>
             <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 text-center mb-2">
-              Recuperar contraseña
+              Reset password
             </h2>
-            <p className="text-center text-gray-500 dark:text-slate-400 mb-6">Ingresa tu email para recibir el enlace de recuperación</p>
+            <p className="text-center text-gray-500 dark:text-slate-400 mb-6">Enter your email to receive the recovery link</p>
           </div>
           <form className="space-y-6" onSubmit={handleResetPassword}>
             <div>
@@ -79,7 +79,7 @@ export default function ForgotPassword() {
 
             {message && (
               <div className={`text-sm p-3 rounded-lg border ${
-                message.includes('Error') || message.includes('fallida') || message.includes('Completá')
+                message.includes('Error') || message.includes('failed') || message.includes('Please complete')
                   ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20'
                   : 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/20'
               }`}>
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
                 disabled={loading || !turnstileToken}
                 className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-500 text-white font-bold rounded-lg shadow-md hover:from-blue-700 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50"
               >
-                {loading ? 'Enviando...' : 'Enviar email de recuperación'}
+                {loading ? 'Sending...' : 'Send recovery email'}
               </button>
             </div>
           </form>

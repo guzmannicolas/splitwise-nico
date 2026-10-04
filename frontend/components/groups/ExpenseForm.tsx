@@ -44,24 +44,24 @@ export default function ExpenseForm({
 
     const amountNum = parseFloat(amount)
     if (isNaN(amountNum) || amountNum <= 0) {
-      alert('Monto inválido')
+      alert('Invalid amount')
       return
     }
 
     if (!paidBy) {
-      alert('Selecciona quién pagó')
+      alert('Select who paid')
       return
     }
 
     if (splitType === 'full') {
       if (!fullBeneficiaryId || fullBeneficiaryId === paidBy) {
-        alert('Revisa el beneficiario')
+        alert('Check the beneficiary')
         return
       }
     }
 
     await onSubmit(description, amountNum, paidBy, splitType, customSplits, fullBeneficiaryId || undefined)
-    // No hace falta llamar onCancel aquí si el padre lo hace en el submit
+    // No need to call onCancel here if the parent handles it on submit
   }
 
   return (
@@ -90,13 +90,13 @@ export default function ExpenseForm({
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
               <span className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg text-lg">📝</span>
-              Nuevo Gasto
+              New Expense
             </h2>
           </div>
           <button 
             onClick={onCancel}
             className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800 text-gray-500 hover:text-gray-700 dark:hover:text-white transition-all hover:rotate-90"
-            aria-label="Cerrar"
+            aria-label="Close"
           >
             <span className="text-2xl">×</span>
           </button>
@@ -106,13 +106,13 @@ export default function ExpenseForm({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Concepto</label>
+              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Description</label>
               <input
                 type="text"
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 className="w-full p-4 border rounded-2xl bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 focus:ring-2 focus:ring-green-500 transition-all font-medium"
-                placeholder="¿En qué se gastó el dinero?"
+                placeholder="What was the money spent on?"
                 required
                 disabled={creating}
               />
@@ -120,7 +120,7 @@ export default function ExpenseForm({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Monto total</label>
+                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Total amount</label>
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
                   <input
@@ -137,7 +137,7 @@ export default function ExpenseForm({
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Pagador</label>
+                <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Paid by</label>
                 <select
                   value={paidBy}
                   onChange={e => setPaidBy(e.target.value)}
@@ -145,7 +145,7 @@ export default function ExpenseForm({
                   required
                   disabled={creating}
                 >
-                  <option value="">¿Quién pagó?</option>
+                  <option value="">Who paid?</option>
                   {members.map(m => (
                     <option key={m.user_id} value={m.user_id}>
                       {displayNameFor(m.user_id)}
@@ -157,12 +157,12 @@ export default function ExpenseForm({
           </div>
 
           <div className="space-y-4 pt-4 border-t dark:border-slate-800">
-            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-200 uppercase tracking-tight">Regla de división</h3>
+            <h3 className="text-sm font-bold text-gray-700 dark:text-slate-200 uppercase tracking-tight">Split rule</h3>
             <div className="grid grid-cols-1 gap-3">
               {[
-                { id: 'equal', title: 'Igualitario', desc: 'Todos pagan lo mismo' },
-                { id: 'full', title: 'Liquidación Total', desc: 'Una persona debe el total' },
-                { id: 'custom', title: 'Personalizado', desc: 'Montos específicos p/u' },
+                { id: 'equal', title: 'Equal', desc: 'Everyone pays the same' },
+                { id: 'full', title: 'Full settlement', desc: 'One person owes the total' },
+                { id: 'custom', title: 'Custom', desc: 'Specific amounts per person' },
               ].map((type) => (
                 <label 
                   key={type.id}
@@ -192,7 +192,7 @@ export default function ExpenseForm({
 
           {splitType === 'full' && (
             <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl p-4 space-y-3">
-               <label className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest px-1">¿A quién beneficia?</label>
+               <label className="text-[10px] font-bold text-amber-600 dark:text-amber-500 uppercase tracking-widest px-1">Who benefits?</label>
               <select
                 value={fullBeneficiaryId}
                 onChange={e => setFullBeneficiaryId(e.target.value)}
@@ -200,7 +200,7 @@ export default function ExpenseForm({
                 disabled={creating || !paidBy}
                 required
               >
-                <option value="">Selecciona beneficiario</option>
+                <option value="">Select beneficiary</option>
                 {members
                   .filter(m => m.user_id !== paidBy)
                   .map(m => (
@@ -214,7 +214,7 @@ export default function ExpenseForm({
 
           {splitType === 'custom' && (
             <div className="space-y-3">
-              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Montos por persona</label>
+              <label className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest px-1">Amounts per person</label>
               <div className="space-y-2">
                 {members.map(m => (
                   <div key={m.user_id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/30 rounded-xl border dark:border-slate-800">
@@ -245,7 +245,7 @@ export default function ExpenseForm({
             disabled={creating}
             className="w-full py-4 bg-gradient-to-r from-green-600 to-teal-500 text-white font-bold rounded-2xl hover:from-green-700 hover:to-teal-600 transition-all shadow-xl shadow-green-500/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
           >
-            {creating ? 'Procesando...' : 'Crear Gasto'}
+            {creating ? 'Processing...' : 'Create Expense'}
           </button>
           <button
             type="button"
@@ -253,7 +253,7 @@ export default function ExpenseForm({
             disabled={creating}
             className="w-full py-3 text-sm text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 font-bold transition-colors"
           >
-            Cancelar
+            Cancel
           </button>
         </div>
       </motion.div>

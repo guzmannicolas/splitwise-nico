@@ -11,7 +11,7 @@ type Props = {
 export default function DashboardSidebar({ activeView, onChange, groupsCount }: Props) {
   return (
     <div className="bg-white dark:bg-slate-900 shadow-xl rounded-2xl p-4 border border-blue-100 dark:border-slate-800 sticky top-4">
-      <h2 className="text-lg font-bold text-gray-700 dark:text-slate-100 mb-4">Navegación</h2>
+      <h2 className="text-lg font-bold text-gray-700 dark:text-slate-100 mb-4">Navigation</h2>
       <nav className="space-y-2">
         <button
           onClick={() => onChange('summary')}
@@ -21,7 +21,7 @@ export default function DashboardSidebar({ activeView, onChange, groupsCount }: 
               : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
           }`}
         >
-          💰 Resumen General
+          💰 Overview
         </button>
         <button
           onClick={() => onChange('groups')}
@@ -31,7 +31,7 @@ export default function DashboardSidebar({ activeView, onChange, groupsCount }: 
               : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
           }`}
         >
-          👥 Tus Grupos ({groupsCount})
+          👥 Your Groups ({groupsCount})
         </button>
         <button
           onClick={() => onChange('expenses')}
@@ -41,7 +41,7 @@ export default function DashboardSidebar({ activeView, onChange, groupsCount }: 
               : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-700'
           }`}
         >
-          📝 Últimos Gastos
+          📝 Recent Expenses
         </button>
       </nav>
     </div>

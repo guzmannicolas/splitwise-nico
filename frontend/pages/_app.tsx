@@ -5,16 +5,16 @@ import Script from 'next/script'
 import { useEffect } from 'react'
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Registrar Service Worker para PWA
+  // Register Service Worker for PWA
   useEffect(() => {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          console.log('Service Worker registrado con éxito:', registration.scope);
+          console.log('Service Worker registered successfully:', registration.scope);
         })
         .catch((error) => {
-          console.error('Error al registrar Service Worker:', error);
+          console.error('Error registering Service Worker:', error);
         });
     }
   }, []);
@@ -22,8 +22,8 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Dividi2 - Divide gastos con amigos y mantén las cuentas claras</title>
-        <meta name="description" content="Gestiona gastos compartidos de forma simple y efectiva" />
+        <title>Dividi2 - Split expenses with friends and keep accounts clear</title>
+        <meta name="description" content="Manage shared expenses simply and effectively" />
         
         {/* PWA Meta Tags */}
         <meta name="application-name" content="Dividi2" />
@@ -45,7 +45,7 @@ export default function App({ Component, pageProps }: AppProps) {
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Dividi2" />
-        <meta property="og:description" content="Gestiona gastos compartidos de forma simple y efectiva" />
+        <meta property="og:description" content="Manage shared expenses simply and effectively" />
         <meta property="og:site_name" content="Dividi2" />
       </Head>
 

@@ -50,10 +50,10 @@ export default function Layout({
           .eq('id', user.id)
           .single()
         if (!error && data?.full_name) setDisplayName(data.full_name)
-        else setDisplayName(user.email || 'Mi cuenta')
+        else setDisplayName(user.email || 'My account')
         if (!error && data?.is_admin) setIsAdmin(true)
       } catch {
-        setDisplayName(user?.email || 'Mi cuenta')
+        setDisplayName(user?.email || 'My account')
       }
     }
     fetchDisplayName()
@@ -116,7 +116,7 @@ export default function Layout({
                 <button
                   onClick={toggleTheme}
                   className="p-2 rounded-full border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-600 dark:text-amber-400 hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors shadow-sm"
-                  aria-label="Cambiar tema"
+                  aria-label="Toggle theme"
                 >
                   {theme === 'dark' ? (
                     <span className="text-xl">☀️</span>
@@ -136,7 +136,7 @@ export default function Layout({
                       <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-500 text-white font-bold text-sm">
                         {displayName ? displayName.charAt(0).toUpperCase() : 'U'}
                       </span>
-                      <span className="hidden sm:inline text-sm font-semibold text-gray-800 dark:text-slate-100 max-w-[150px] truncate">{displayName || 'Tu cuenta'}</span>
+                      <span className="hidden sm:inline text-sm font-semibold text-gray-800 dark:text-slate-100 max-w-[150px] truncate">{displayName || 'Your account'}</span>
                       <svg className="h-4 w-4 text-gray-600 dark:text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
                       </svg>
@@ -145,12 +145,12 @@ export default function Layout({
                       <div className="absolute right-0 mt-2 w-72 whitespace-nowrap rounded-xl bg-white dark:bg-slate-800 drop-shadow-2xl ring-1 ring-black/5 border border-gray-200 dark:border-slate-700 z-50 overflow-hidden">
                         <div className="py-1 divide-y divide-gray-100 dark:divide-slate-700">
                           <div className="py-1">
-                            <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Tu cuenta</Link>
-                            <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Crear un grupo</Link>
-                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline" title="Próximamente">Calculadoras</a>
+                            <Link href="/profile" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Your account</Link>
+                            <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline">Create a group</Link>
+                            <a href="#" className="block px-4 py-2 text-sm text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-700 no-underline" title="Coming soon">Calculators</a>
                             {isAdmin && (
                               <Link href="/admin" className="block px-4 py-2 text-sm text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 font-medium no-underline">
-                                ⚙️ Panel Admin
+                                ⚙️ Admin Panel
                               </Link>
                             )}
                           </div>
@@ -158,7 +158,7 @@ export default function Layout({
                             onClick={handleSignOut}
                             className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
-                            Cerrar sesión
+                            Sign out
                           </button>
                         </div>
                       </div>

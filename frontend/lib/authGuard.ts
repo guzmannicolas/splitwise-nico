@@ -7,15 +7,15 @@ interface AuthGuardResult {
 }
 
 /**
- * Guard de autenticación para getServerSideProps.
- * Redirige a /auth/login si no hay sesión activa.
+ * Authentication guard for getServerSideProps.
+ * Redirects to /auth/login if there is no active session.
  */
 export async function requireAuth(
   context: GetServerSidePropsContext
 ): Promise<GetServerSidePropsResult<any> | AuthGuardResult> {
   const supabase = createSupabaseServerClient(context)
   
-  // Usamos getUser() en lugar de getSession() para mayor seguridad (valida con Supabase)
+  // Use getUser() instead of getSession() for stronger security (validates with Supabase)
   const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error || !user) {
@@ -34,8 +34,8 @@ export async function requireAuth(
 }
 
 /**
- * Guard inverso: redirige a /dashboard si ya existe una sesión.
- * Ideal para páginas de login o registro.
+ * Inverse guard: redirects to /dashboard if a session already exists.
+ * Intended for login and registration pages.
  */
 export async function redirectIfAuthed(
   context: GetServerSidePropsContext
@@ -52,5 +52,5 @@ export async function redirectIfAuthed(
     }
   }
 
-  return null // No hay sesión, continuar con la página
+  return null // No session, continue to the page
 }

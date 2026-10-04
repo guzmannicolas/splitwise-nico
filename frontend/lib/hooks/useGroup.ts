@@ -6,8 +6,8 @@ import { BalanceCalculator } from '../services/BalanceCalculator'
 import type { Group, Member, Expense, ExpenseSplit, Settlement, Balance } from '../services/types'
 
 /**
- * Hook personalizado para manejar toda la lógica de un grupo
- * Responsabilidad: Estado y operaciones del grupo
+ * Custom hook for managing all group logic
+ * Responsibility: Group state and operations
  */
 export function useGroup(groupId: string | undefined, initialData?: {
   group: Group | null;
@@ -22,8 +22,8 @@ export function useGroup(groupId: string | undefined, initialData?: {
   const [splits, setSplits] = useState<ExpenseSplit[]>(initialData?.splits || [])
   const [settlements, setSettlements] = useState<Settlement[]>(initialData?.settlements || [])
   
-  // Balances REACTIVOS: se recalculan siempre que cambien los datos base
-  // Esto asegura que con los datos de SSR, el balance esté listo al instante
+  // REACTIVE balances: recomputed whenever base data changes
+  // This ensures that with SSR data the balance is available immediately
   const balances = useMemo(() => {
     const relevantSettlements = BalanceCalculator.filterRelevantSettlements(
       expenses,
@@ -42,15 +42,15 @@ export function useGroup(groupId: string | undefined, initialData?: {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Ref para evitar doble fetch si ya tenemos datos de SSR
+  // Ref to avoid a double fetch when SSR data is already available
   const hasLoadedInitial = useRef(!!initialData)
 
-  // Cargar datos del grupo
+  // Load group data
   useEffect(() => {
     if (!groupId) return
-    
-    // Si ya cargamos datos por SSR, la primera vez saltamos el fetch automático
-    // pero marcamos que ya no es la carga inicial para futuros cambios de groupId
+
+    // If SSR data was already loaded, skip the first automatic fetch
+    // but mark that this is no longer the initial load for future groupId changes
     if (hasLoadedInitial.current) {
       hasLoadedInitial.current = false
       return
@@ -70,38 +70,38 @@ export function useGroup(groupId: string | undefined, initialData?: {
       }
       setError(null)
 
-      // 1. Cargar grupo
+      // 1. Load group
       const { data: groupData, error: groupError } = await GroupService.getGroupById(groupId)
       if (groupError) throw new Error(groupError.message)
       setGroup(groupData)
 
-      // 2. Cargar miembros
+      // 2. Load members
       const { data: membersData, error: membersError } = await GroupService.getGroupMembers(groupId)
       if (membersError) throw new Error(membersError.message)
       setMembers(membersData || [])
 
-      // 3. Cargar gastos
+      // 3. Load expenses
       const { data: expensesData, error: expensesError } = await ExpenseService.getGroupExpenses(groupId)
       if (expensesError) throw new Error(expensesError.message)
       setExpenses(expensesData || [])
 
-      // 4. Cargar splits
+      // 4. Load splits
       const expenseIds = expensesData?.map(e => e.id) || []
       const { data: splitsData, error: splitsError } = await ExpenseService.getExpenseSplits(expenseIds)
       if (!splitsError) {
         setSplits(splitsData || [])
       }
 
-      // 5. Cargar liquidaciones
+      // 5. Load settlements
       const { data: settlementsData } = await SettlementService.getGroupSettlements(groupId)
       setSettlements(settlementsData || [])
 
-      // Nota: Ya no calculamos balances aquí porque useMemo se encarga automáticamente
-      // al actualizar los estados arriba.
+      // Note: balances are no longer computed here — useMemo handles that automatically
+      // when the states above are updated.
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al cargar el grupo')
-      console.error('Error en useGroup:', err)
+      setError(err instanceof Error ? err.message : 'Error loading the group')
+      console.error('Error in useGroup:', err)
     } finally {
       if (background) {
         setIsRefreshing(false)

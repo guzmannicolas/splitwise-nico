@@ -1,4 +1,4 @@
-// Service Worker para PWA con Push Notifications
+// Service Worker for PWA with Push Notifications
 // Version: 1.0.3
 
 const CACHE_NAME = 'splitwise-nico-v5';
@@ -9,7 +9,7 @@ const urlsToCache = [
   '/icon-512x512.png',
 ];
 
-// Install event - cachea assets principales
+// Install event - caches main assets
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker version 1.0.3...');
   event.waitUntil(
@@ -20,11 +20,11 @@ self.addEventListener('install', (event) => {
       console.log('[SW] Installation complete');
     })
   );
-  // Activa el SW inmediatamente
+  // Activate SW immediately
   self.skipWaiting();
 });
 
-// Activate event - limpia caches viejos
+// Activate event - clears old caches
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker version 1.0.3...');
   event.waitUntil(
@@ -46,9 +46,9 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - estrategia Network First con fallback a cache
+// Fetch event - Network First strategy with cache fallback
 self.addEventListener('fetch', (event) => {
-  // Solo cachear GET requests
+  // Only cache GET requests
   if (event.request.method !== 'GET') {
     return;
   }
@@ -56,7 +56,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Clona la respuesta para guardarla en cache
+        // Clone the response to save in cache
         const responseToCache = response.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
@@ -64,19 +64,19 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Si falla el network, usa cache
+        // If network fails, use cache
         return caches.match(event.request);
       })
   );
 });
 
-// Push event - recibe notificaciones push
+// Push event - receives push notifications
 self.addEventListener('push', (event) => {
   console.log('[SW] Push notification received', event);
 
   let notificationData = {
     title: 'Splitwise Nico',
-    body: 'Tienes una nueva notificación',
+    body: 'You have a new notification',
     icon: '/icon-192x192.png',
     badge: '/icon-192x192.png',
     tag: 'default',
@@ -107,17 +107,17 @@ self.addEventListener('push', (event) => {
   event.waitUntil(promiseChain);
 });
 
-// Notification click event - abre la app al hacer click
+// Notification click event - opens the app on click
 self.addEventListener('notificationclick', (event) => {
   console.log('[SW] Notification clicked:', event);
   event.notification.close();
 
-  // Determina la URL a abrir según los datos de la notificación
+  // Determine the URL to open based on notification data
   let urlToOpen = '/dashboard';
-  
+
   if (event.notification.data) {
     const { groupId, expenseId, type } = event.notification.data;
-    
+
     if (type === 'new_expense' && groupId) {
       urlToOpen = `/groups/${groupId}`;
     } else if (type === 'settlement' && groupId) {
@@ -127,16 +127,16 @@ self.addEventListener('notificationclick', (event) => {
     }
   }
 
-  // Abre o enfoca la ventana de la app
+  // Open or focus the app window
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si ya hay una ventana abierta, enfócala
+      // If a window is already open, focus it
       for (const client of clientList) {
         if (client.url.includes(urlToOpen) && 'focus' in client) {
           return client.focus();
         }
       }
-      // Si no, abre una nueva ventana
+      // Otherwise, open a new window
       if (clients.openWindow) {
         return clients.openWindow(urlToOpen);
       }
@@ -147,23 +147,23 @@ self.addEventListener('notificationclick', (event) => {
 // Push subscription change event
 self.addEventListener('pushsubscriptionchange', (event) => {
   console.log('[SW] Push subscription changed');
-  
+
   event.waitUntil(
     self.registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(
-        // Esta key debe coincidir con NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        // This key must match NEXT_PUBLIC_VAPID_PUBLIC_KEY
         'BFAOGI2-BotCYSh5RExX5zprIYbyaA8JPCZfpWmUxU_NPDMKsQASqkpSRS8WT6CwWD7McwRmQurd8U1Esgt-uM0'
       )
     })
     .then((subscription) => {
       console.log('[SW] Resubscribed:', subscription);
-      // Aquí podrías enviar la nueva suscripción al servidor
+      // Here you could send the new subscription to the server
     })
   );
 });
 
-// Helper: Convierte VAPID key de base64 a Uint8Array
+// Helper: Converts VAPID key from base64 to Uint8Array
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding)

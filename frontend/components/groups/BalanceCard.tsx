@@ -22,7 +22,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
     return null
   }
 
-  // Recortar la lista incrementalmente
+  // Incrementally expand the list
   const shouldShowToggle = balances.length > 4
   const hasMore = balances.length > visibleCount
   const displayedBalances = balances.slice(0, visibleCount)
@@ -61,7 +61,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
                 ? `+$${b.balance.toFixed(2)}`
                 : b.balance < -0.01
                   ? `-$${Math.abs(b.balance).toFixed(2)}`
-                  : 'Saldado'}
+                  : 'Settled'}
             </span>
           </div>
         ))}
@@ -74,14 +74,14 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
               onClick={handleShowMore}
               className="w-full py-2 text-sm font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center justify-center gap-2 transition-colors border border-dashed border-purple-200 dark:border-slate-700 rounded-xl bg-purple-50/30 dark:bg-slate-800/20"
             >
-              Ver {Math.min(4, balances.length - visibleCount)} más... <span>▼</span>
+              Show {Math.min(4, balances.length - visibleCount)} more... <span>▼</span>
             </button>
           ) : (
             <button
               onClick={handleShowLess}
               className="w-full py-2 text-sm font-bold text-purple-400 dark:text-slate-500 hover:text-purple-500 flex items-center justify-center gap-2 transition-colors border border-dashed border-purple-100 dark:border-slate-800 rounded-xl bg-gray-50/30 dark:bg-slate-800/10"
             >
-              Ver menos <span>▲</span>
+              Show less <span>▲</span>
             </button>
           )}
         </div>
@@ -95,18 +95,18 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
           }}
           className="w-full py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-purple-500/20 active:scale-95 flex items-center justify-center gap-2"
         >
-          <span>📊</span> {isDesktop ? 'Ver detalles de deudas' : 'Ver desglose completo'}
+          <span>📊</span> {isDesktop ? 'View debt details' : 'View full breakdown'}
         </button>
       )}
 
       <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl text-xs text-gray-500 dark:text-slate-400 border border-gray-100 dark:border-slate-800 leading-relaxed">
         <p className="flex items-center gap-2 mb-1">
           <span className="h-2 w-2 rounded-full bg-green-500"></span>
-          <strong>Positivo:</strong> Le deben dinero
+          <strong>Positive:</strong> Owed money
         </p>
         <p className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-red-500"></span>
-          <strong>Negativo:</strong> Debe dinero
+          <strong>Negative:</strong> Owes money
         </p>
       </div>
     </div>
@@ -138,7 +138,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
           </svg>
         </div>
         <span className="font-bold text-sm">Balance</span>
-        <span className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Saldos resumidos</span>
+        <span className="text-[10px] text-gray-400 dark:text-slate-500 uppercase">Summary</span>
       </button>
 
       {/* Modal Overlay */}
@@ -150,7 +150,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
             {/* Header Modal */}
             <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-6 text-white flex justify-between items-center shrink-0">
               <h2 className="text-xl font-bold flex items-center gap-2">
-                <span>⚖️</span> Balance del Grupo
+                <span>⚖️</span> Group Balance
               </h2>
               <button 
                 onClick={() => setIsModalOpen(false)}
@@ -171,7 +171,7 @@ export default function BalanceCard({ balances, onShowDetails }: BalanceCardProp
                 onClick={() => setIsModalOpen(false)}
                 className="w-full max-w-xs py-3 bg-gray-600 dark:bg-slate-700 text-white font-bold rounded-2xl hover:bg-gray-700 dark:hover:bg-slate-600 shadow-lg active:scale-95 transition-all"
               >
-                Cerrar
+                Close
               </button>
             </div>
           </div>

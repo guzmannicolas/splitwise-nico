@@ -27,13 +27,13 @@ export default function Register() {
     setMessage(null)
 
     if (!turnstileToken) {
-      setMessage('Completá la verificación de seguridad')
+      setMessage('Please complete the security verification')
       return
     }
 
     const valid = await verifyTurnstile(turnstileToken)
     if (!valid) {
-      setMessage('Verificación de seguridad fallida, intentá de nuevo')
+      setMessage('Security verification failed, please try again')
       turnstileRef.current?.reset()
       setTurnstileToken(null)
       return
@@ -56,11 +56,11 @@ export default function Register() {
         turnstileRef.current?.reset()
         setTurnstileToken(null)
       } else {
-        setMessage('Revisa tu correo para confirmar la cuenta')
+        setMessage('Check your email to confirm your account')
       }
     } catch (err) {
       console.error('Caught error:', err)
-      setMessage('Error inesperado: ' + (err instanceof Error ? err.message : String(err)))
+      setMessage('Unexpected error: ' + (err instanceof Error ? err.message : String(err)))
       turnstileRef.current?.reset()
       setTurnstileToken(null)
     }
@@ -80,10 +80,10 @@ export default function Register() {
     <Layout hideAuthLinks>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-2 transition-colors duration-500">
         <form onSubmit={handleRegister} className="w-full max-w-md p-8 bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md transition-all">
-          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Registrarse</h2>
+          <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Sign Up</h2>
           {message && (
             <p className={`${
-              message.includes('Error') || message.includes('error') || message.includes('fallida') || message.includes('Completá')
+              message.includes('Error') || message.includes('error') || message.includes('failed') || message.includes('Please complete')
                 ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/20'
                 : 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/10 border-green-100 dark:border-green-900/20'
             } p-3 rounded-lg mb-4 text-sm border`}>
@@ -100,7 +100,7 @@ export default function Register() {
             <input
               className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
               type={showPassword ? "text" : "password"}
-              placeholder="Contraseña"
+              placeholder="Password"
               value={password}
               onChange={e => setPassword(e.target.value)}
             />
@@ -108,7 +108,7 @@ export default function Register() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none"
-              aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -138,12 +138,12 @@ export default function Register() {
             type="submit"
             disabled={!turnstileToken}
           >
-            Registrarse
+            Sign Up
           </button>
 
           <div className="mt-6 flex items-center">
             <div className="flex-grow border-t border-gray-300 dark:border-slate-700"></div>
-            <span className="flex-shrink-0 mx-4 text-sm text-gray-500 dark:text-slate-400">O continuar con</span>
+            <span className="flex-shrink-0 mx-4 text-sm text-gray-500 dark:text-slate-400">Or continue with</span>
             <div className="flex-grow border-t border-gray-300 dark:border-slate-700"></div>
           </div>
 
@@ -163,7 +163,7 @@ export default function Register() {
 
           <div className="mt-6 text-center">
             <Link href="/auth/login" className="text-sm text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200">
-              ¿Ya tienes cuenta? <span className="font-semibold text-blue-600 dark:text-blue-400">Inicia sesión</span>
+              Already have an account? <span className="font-semibold text-blue-600 dark:text-blue-400">Sign in</span>
             </Link>
           </div>
         </form>

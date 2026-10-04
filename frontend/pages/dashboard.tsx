@@ -57,12 +57,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   
   if ('redirect' in result) return result
 
-  // Narrowing de tipos para TypeScript
+  // TypeScript type narrowing
   if (!('user' in result)) return { notFound: true }
 
   const { user, supabase } = result
 
-  // Pre-fetch de grupos en el servidor
+  // Server-side pre-fetch of groups
   const { data: groups } = await supabase
     .from('groups')
     .select('*')
@@ -77,14 +77,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 }
 
 export default function Dashboard({ user: serverUser, initialGroups }: DashboardProps) {
-  // Auth user centralizado
+  // Centralised auth user
   const { user: authUser, loading: authLoading } = useAuthUser()
   const router = useRouter()
 
-  // Estado UI y datos
+  // UI state and data
   const [activeView, setActiveView] = useState<ViewType>('summary')
 
-  // Sincronizar activeView con la URL para soportar navegación móvil
+  // Sync activeView with the URL to support mobile navigation
   useEffect(() => {
     if (router.query.view) {
       setActiveView(router.query.view as ViewType)
@@ -97,7 +97,7 @@ export default function Dashboard({ user: serverUser, initialGroups }: Dashboard
   const [loadingGroups, setLoadingGroups] = useState(false)
   const [recentExpenses, setRecentExpenses] = useState<Expense[]>([])
 
-  // Summary hook (usa SummaryService)
+  // Summary hook (uses SummaryService)
   const { summary, loading: summaryLoading } = useGlobalSummary(authUser?.id || null)
 
   useEffect(() => {
@@ -116,10 +116,10 @@ export default function Dashboard({ user: serverUser, initialGroups }: Dashboard
         .select('*')
         .order('created_at', { ascending: false })
       if (error) {
-        console.error('Error obteniendo grupos:', error)
+        console.error('Error fetching groups:', error)
       }
       setGroups(data || [])
-      // cargar gastos recientes tras tener grupos
+      // load recent expenses once groups are available
       if (data && data.length > 0) {
         await fetchRecentExpenses(data.map(g => g.id))
       } else {
@@ -189,15 +189,15 @@ export default function Dashboard({ user: serverUser, initialGroups }: Dashboard
   return (
     <Layout serverUser={serverUser}>
       <div className="max-w-7xl mx-auto p-4">
-        {/* Header - Oculto en móvil */}
+        {/* Header - Hidden on mobile */}
         <div className="hidden lg:block bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-2xl shadow-xl mb-6">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-blue-100 mt-1">Administra tus grupos y finanzas</p>
+          <p className="text-blue-100 mt-1">Manage your groups and finances</p>
         </div>
 
         {/* Layout: Sidebar + Content */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar izquierdo - Oculto en móvil */}
+          {/* Left sidebar - Hidden on mobile */}
           <div className="hidden lg:block lg:col-span-1">
             <DashboardSidebar
               activeView={activeView}

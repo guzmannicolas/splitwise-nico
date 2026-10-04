@@ -4,12 +4,12 @@ import { getSplitStrategy } from './splits'
 import { createExpenseSchema, updateExpenseSchema, validateSchema } from '../validation/schemas'
 
 /**
- * Servicio para manejar operaciones relacionadas con gastos
- * Responsabilidad única: CRUD de expenses y expense_splits
+ * Service for handling expense-related operations
+ * Single responsibility: CRUD for expenses and expense_splits
  */
 export class ExpenseService {
   /**
-   * Obtiene todos los gastos de un grupo
+   * Fetches all expenses for a group
    */
   static async getGroupExpenses(groupId: string): Promise<{ data: Expense[] | null; error: any }> {
     const { data, error } = await supabase
@@ -25,7 +25,7 @@ export class ExpenseService {
   }
 
   /**
-   * Obtiene todos los splits de una lista de gastos
+   * Fetches all splits for a list of expenses
    */
   static async getExpenseSplits(expenseIds: string[]): Promise<{ data: ExpenseSplit[] | null; error: any }> {
     if (expenseIds.length === 0) {
@@ -41,17 +41,17 @@ export class ExpenseService {
   }
 
   /**
-   * Crea un nuevo gasto con sus splits
+   * Creates a new expense with its splits
    */
   static async createExpense(expenseData: CreateExpenseData): Promise<{ success: boolean; error?: string }> {
     try {
-      // 1. Validar datos con Zod
+      // 1. Validate with Zod
       const validation = validateSchema(createExpenseSchema, expenseData)
       if (!validation.success) {
         return { success: false, error: validation.errors.join(', ') }
       }
 
-      // 2. Crear el gasto
+      // 2. Create the expense
       const { data: expense, error: expenseError } = await supabase
         .from('expenses')
         .insert({
@@ -65,10 +65,10 @@ export class ExpenseService {
         .single()
 
       if (expenseError || !expense) {
-        return { success: false, error: expenseError?.message || 'Error al crear el gasto' }
+        return { success: false, error: expenseError?.message || 'Failed to create expense' }
       }
 
-      // 3. Calcular splits usando Strategy
+      // 3. Compute splits using Strategy
       const strategy = getSplitStrategy(validation.data.splitType)
       const splits = strategy.build(
         expense.id,
@@ -85,32 +85,32 @@ export class ExpenseService {
         .insert(splits)
 
       if (splitsError) {
-        // Rollback: eliminar el gasto si falla crear splits
+        // Rollback: delete the expense if split creation fails
         await supabase.from('expenses').delete().eq('id', expense.id)
-        return { success: false, error: 'Error al crear la división del gasto' }
+        return { success: false, error: 'Failed to create expense splits' }
       }
 
       return { success: true }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
 
   /**
-   * Actualiza un gasto existente y sus splits
+   * Updates an existing expense and its splits
    */
   static async updateExpense(
     expenseId: string,
     updateData: UpdateExpenseData
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // 1. Validar datos con Zod
+      // 1. Validate with Zod
       const validation = validateSchema(updateExpenseSchema, updateData)
       if (!validation.success) {
         return { success: false, error: validation.errors.join(', ') }
       }
 
-      // 2. Actualizar el gasto
+      // 2. Update the expense
       const { error: expenseError } = await supabase
         .from('expenses')
         .update({
@@ -126,13 +126,13 @@ export class ExpenseService {
         return { success: false, error: expenseError.message }
       }
 
-      // 3. Eliminar splits antiguos
+      // 3. Delete old splits
       await supabase
         .from('expense_splits')
         .delete()
         .eq('expense_id', expenseId)
 
-      // 4. Crear nuevos splits usando Strategy
+      // 4. Create new splits using Strategy
       const strategy = getSplitStrategy(validation.data.splitType)
       const splits = strategy.build(
         expenseId,
@@ -149,20 +149,20 @@ export class ExpenseService {
         .insert(splits)
 
       if (splitsError) {
-        return { success: false, error: 'Error al actualizar la división del gasto' }
+        return { success: false, error: 'Failed to update expense splits' }
       }
 
       return { success: true }
     } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : 'Error desconocido' }
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
     }
   }
 
   /**
-   * Elimina un gasto y sus splits
+   * Deletes an expense and its splits
    */
   static async deleteExpense(expenseId: string): Promise<{ success: boolean; error?: string }> {
-    // Los splits se eliminan automáticamente por CASCADE en la BD
+    // Splits are deleted automatically via CASCADE in the database
     const { error } = await supabase
       .from('expenses')
       .delete()

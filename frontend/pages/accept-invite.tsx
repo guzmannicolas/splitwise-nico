@@ -13,24 +13,24 @@ export default function AcceptInvite() {
   const [needsAuth, setNeedsAuth] = useState(false)
 
   useEffect(() => {
-    // Esperar a que el router esté listo
+    // Wait for the router to be ready
     if (!router.isReady) return
     if (!token) return
 
     async function processInvitation() {
       try {
-        // Verificar si hay sesión
+        // Check if there is a session
         const { data: { session } } = await supabase.auth.getSession()
         
         if (!session) {
           setNeedsAuth(true)
           setLoading(false)
-          // Guardar token en localStorage para usar después del login
+          // Save token in localStorage to use after login
           localStorage.setItem('pending_invitation_token', token as string)
           return
         }
 
-        // Llamar a la función que acepta la invitación
+        // Call the function that accepts the invitation
         const { data, error: rpcError } = await supabase
           .rpc('accept_invitation', { invitation_token: token })
 
@@ -48,19 +48,19 @@ export default function AcceptInvite() {
           return
         }
 
-        // Éxito
+        // Success
         setSuccess(true)
         setGroupId(result.group_id || null)
         setLoading(false)
 
-        // Redirigir al grupo después de 2 segundos
+        // Redirect to the group after 2 seconds
         if (result.group_id) {
           setTimeout(() => {
             router.push(`/groups/${result.group_id}`)
           }, 2000)
         }
       } catch (err: any) {
-        setError(err.message || 'Error al procesar la invitación')
+        setError(err.message || 'Error processing the invitation')
         setLoading(false)
       }
     }
@@ -68,7 +68,7 @@ export default function AcceptInvite() {
     processInvitation()
   }, [token, router.isReady])
 
-  // Manejar aceptación después del login
+  // Handle acceptance after login
   useEffect(() => {
     const pendingToken = localStorage.getItem('pending_invitation_token')
     if (pendingToken && !token) {
@@ -83,7 +83,7 @@ export default function AcceptInvite() {
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Procesando invitación...</p>
+            <p className="text-gray-600">Processing invitation...</p>
           </div>
         </div>
       </Layout>
@@ -98,10 +98,10 @@ export default function AcceptInvite() {
             <div className="text-center mb-6">
               <div className="text-6xl mb-4">📧</div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Invitación Recibida
+                Invitation Received
               </h1>
               <p className="text-gray-600">
-                Para aceptar esta invitación, primero debes iniciar sesión o crear una cuenta.
+                To accept this invitation, you must first sign in or create an account.
               </p>
             </div>
             
@@ -110,18 +110,18 @@ export default function AcceptInvite() {
                 onClick={() => router.push('/auth/login')}
                 className="w-full bg-blue-600 text-white rounded-xl py-3 font-semibold hover:bg-blue-700 transition"
               >
-                Iniciar Sesión
+                Sign In
               </button>
               <button
                 onClick={() => router.push('/auth/register')}
                 className="w-full bg-white text-blue-600 border-2 border-blue-600 rounded-xl py-3 font-semibold hover:bg-blue-50 transition"
               >
-                Crear Cuenta
+                Create Account
               </button>
             </div>
 
             <p className="text-sm text-gray-500 text-center mt-4">
-              Tu invitación se guardará y se procesará automáticamente después de iniciar sesión.
+              Your invitation will be saved and processed automatically after you sign in.
             </p>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function AcceptInvite() {
                 onClick={() => router.push('/dashboard')}
                 className="bg-blue-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-blue-700 transition"
               >
-                Ir al Dashboard
+                Go to Dashboard
               </button>
             </div>
           </div>
@@ -161,17 +161,17 @@ export default function AcceptInvite() {
             <div className="text-center">
               <div className="text-6xl mb-4">✅</div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                ¡Te uniste al grupo!
+                You joined the group!
               </h1>
               <p className="text-gray-600 mb-6">
-                Te redirigiremos al grupo en unos segundos...
+                You will be redirected to the group in a few seconds...
               </p>
               {groupId && (
                 <button
                   onClick={() => router.push(`/groups/${groupId}`)}
                   className="bg-blue-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-blue-700 transition"
                 >
-                  Ir al Grupo Ahora
+                  Go to Group Now
                 </button>
               )}
             </div>

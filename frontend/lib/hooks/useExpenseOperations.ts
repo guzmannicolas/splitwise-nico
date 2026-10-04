@@ -4,8 +4,8 @@ import { NotificationService } from '../services/NotificationService'
 import type { CreateExpenseData, UpdateExpenseData, SplitType, Member } from '../services/types'
 
 /**
- * Hook personalizado para manejar operaciones de gastos
- * Responsabilidad: CRUD de gastos y estado del formulario
+ * Custom hook for managing expense operations
+ * Responsibility: expense CRUD and form state
  */
 export function useExpenseOperations(
   groupId: string,
@@ -18,10 +18,10 @@ export function useExpenseOperations(
   const [updating, setUpdating] = useState(false)
 
   const getMemberName = (userId: string) =>
-    members.find(m => m.user_id === userId)?.profiles?.full_name ?? 'Alguien'
+    members.find(m => m.user_id === userId)?.profiles?.full_name ?? 'Someone'
 
   /**
-   * Crea un nuevo gasto
+   * Creates a new expense
    */
   const createExpense = async (
     description: string,
@@ -34,7 +34,7 @@ export function useExpenseOperations(
     setCreating(true)
 
     try {
-      // Convertir customSplits de string a number
+      // Convert customSplits from string to number
       const customSplitsNumbers = customSplits
         ? Object.entries(customSplits).reduce((acc, [userId, amountStr]) => {
             const num = parseFloat(amountStr)
@@ -63,10 +63,10 @@ export function useExpenseOperations(
         onSuccess()
         NotificationService.notifyNewExpense(groupId, description, amount, getMemberName(paidBy))
       } else {
-        alert(result.error || 'Error al crear el gasto')
+        alert(result.error || 'Failed to create expense')
       }
     } catch (error) {
-      alert('Error inesperado al crear el gasto')
+      alert('Unexpected error while creating expense')
       console.error(error)
     } finally {
       setCreating(false)
@@ -74,7 +74,7 @@ export function useExpenseOperations(
   }
 
   /**
-   * Actualiza un gasto existente
+   * Updates an existing expense
    */
   const updateExpense = async (
     expenseId: string,
@@ -88,7 +88,7 @@ export function useExpenseOperations(
     setUpdating(true)
 
     try {
-      // Convertir customSplits de string a number
+      // Convert customSplits from string to number
       const customSplitsNumbers = customSplits
         ? Object.entries(customSplits).reduce((acc, [userId, amountStr]) => {
             const num = parseFloat(amountStr)
@@ -116,10 +116,10 @@ export function useExpenseOperations(
         onSuccess()
         NotificationService.notifyExpenseUpdated(groupId, description, getMemberName(currentUserId))
       } else {
-        alert(result.error || 'Error al actualizar el gasto')
+        alert(result.error || 'Failed to update expense')
       }
     } catch (error) {
-      alert('Error inesperado al actualizar el gasto')
+      alert('Unexpected error while updating expense')
       console.error(error)
     } finally {
       setUpdating(false)
@@ -127,10 +127,10 @@ export function useExpenseOperations(
   }
 
   /**
-   * Elimina un gasto
+   * Deletes an expense
    */
-  const deleteExpense = async (expenseId: string, description: string = 'el gasto') => {
-    if (!confirm('¿Estás seguro de que quieres eliminar este gasto?')) {
+  const deleteExpense = async (expenseId: string, description: string = 'the expense') => {
+    if (!confirm('Are you sure you want to delete this expense?')) {
       return
     }
 
@@ -141,10 +141,10 @@ export function useExpenseOperations(
         onSuccess()
         NotificationService.notifyExpenseDeleted(groupId, description, getMemberName(currentUserId))
       } else {
-        alert(result.error || 'Error al eliminar el gasto')
+        alert(result.error || 'Failed to delete expense')
       }
     } catch (error) {
-      alert('Error inesperado al eliminar el gasto')
+      alert('Unexpected error while deleting expense')
       console.error(error)
     }
   }

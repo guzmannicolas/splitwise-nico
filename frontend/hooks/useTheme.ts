@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 export function useTheme() {
-  // Inicializamos con el tema que el usuario pidió por defecto: 'dark'
+  // Default theme is 'dark'
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [mounted, setMounted] = useState(false);
 

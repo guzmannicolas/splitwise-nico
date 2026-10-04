@@ -2,12 +2,12 @@ import { supabase } from '../supabaseClient'
 import type { Group, Member } from './types'
 
 /**
- * Servicio para manejar operaciones relacionadas con grupos
- * Responsabilidad única: Interacción con la tabla 'groups' y 'group_members'
+ * Service for handling group-related operations
+ * Single responsibility: interaction with the 'groups' and 'group_members' tables
  */
 export class GroupService {
   /**
-   * Obtiene un grupo por ID
+   * Fetches a group by ID
    */
   static async getGroupById(groupId: string): Promise<{ data: Group | null; error: any }> {
     const { data, error } = await supabase
@@ -20,7 +20,7 @@ export class GroupService {
   }
 
   /**
-   * Obtiene todos los miembros de un grupo
+   * Fetches all members of a group
    */
   static async getGroupMembers(groupId: string): Promise<{ data: Member[] | null; error: any }> {
     const { data, error } = await supabase
@@ -35,7 +35,7 @@ export class GroupService {
   }
 
   /**
-   * Crea una invitación para un nuevo miembro
+   * Creates an invitation for a new member
    */
   static async inviteMember(
     groupId: string,
@@ -57,7 +57,7 @@ export class GroupService {
   }
 
   /**
-   * Verifica si un usuario es miembro del grupo
+   * Checks whether a user is a member of the group
    */
   static async isMember(groupId: string, userId: string): Promise<boolean> {
     const { data, error } = await supabase
@@ -71,7 +71,7 @@ export class GroupService {
   }
 
   /**
-   * Obtiene todas las invitaciones de un grupo
+   * Fetches all invitations for a group
    */
   static async getGroupInvitations(groupId: string): Promise<{ data: any[] | null; error: any }> {
     const { data, error } = await supabase

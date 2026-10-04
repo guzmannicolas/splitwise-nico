@@ -29,13 +29,13 @@ export default function Login() {
     setError(null)
 
     if (!turnstileToken) {
-      setError('Completá la verificación de seguridad')
+      setError('Please complete the security verification')
       return
     }
 
     const valid = await verifyTurnstile(turnstileToken)
     if (!valid) {
-      setError('Verificación de seguridad fallida, intentá de nuevo')
+      setError('Security verification failed, please try again')
       turnstileRef.current?.reset()
       setTurnstileToken(null)
       return
@@ -65,7 +65,7 @@ export default function Login() {
     <Layout hideAuthLinks>
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-indigo-200 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 px-2 transition-colors duration-500">
       <form onSubmit={handleLogin} className="w-full max-w-md p-8 bg-white/90 dark:bg-slate-900/90 rounded-2xl shadow-2xl border border-blue-100 dark:border-slate-800 backdrop-blur-md transition-all">
-        <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Iniciar Sesión</h2>
+        <h2 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center">Sign In</h2>
         {error && <p className="text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 p-3 rounded-lg mb-4 text-sm border border-red-100 dark:border-red-900/20">{error}</p>}
         <input
           className="w-full mb-4 p-3 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
@@ -77,7 +77,7 @@ export default function Login() {
           <input
             className="w-full p-3 pr-12 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 transition-colors"
             type={showPassword ? "text" : "password"}
-            placeholder="Contraseña"
+            placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
           />
@@ -85,7 +85,7 @@ export default function Login() {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none"
-            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? (
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -115,12 +115,12 @@ export default function Login() {
           type="submit"
           disabled={!turnstileToken}
         >
-          Iniciar Sesión
+          Sign In
         </button>
 
         <div className="mt-6 flex items-center">
           <div className="flex-grow border-t border-gray-300 dark:border-slate-700"></div>
-          <span className="flex-shrink-0 mx-4 text-sm text-gray-500 dark:text-slate-400">O continuar con</span>
+          <span className="flex-shrink-0 mx-4 text-sm text-gray-500 dark:text-slate-400">Or continue with</span>
           <div className="flex-grow border-t border-gray-300 dark:border-slate-700"></div>
         </div>
 
@@ -140,10 +140,10 @@ export default function Login() {
 
         <div className="mt-6 text-center space-y-2">
           <Link href="/auth/forgot-password" className="block text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold">
-            ¿Olvidaste tu contraseña?
+            Forgot your password?
           </Link>
           <Link href="/auth/register" className="block text-sm text-gray-600 dark:text-slate-400 hover:text-gray-800 dark:hover:text-slate-200">
-            ¿No tienes cuenta? <span className="font-semibold text-blue-600 dark:text-blue-400">Regístrate</span>
+            Don&apos;t have an account? <span className="font-semibold text-blue-600 dark:text-blue-400">Sign up</span>
           </Link>
         </div>
       </form>
